@@ -64,6 +64,9 @@
 	import Sidebar from '../icons/Sidebar.svelte';
 	import PinnedModelList from './Sidebar/PinnedModelList.svelte';
 	import Note from '../icons/Note.svelte';
+	import ChartBar from '../icons/ChartBar.svelte';
+	import Sparkles from '../icons/Sparkles.svelte';
+	import UsersSolid from '../icons/UsersSolid.svelte';
 	import { slide } from 'svelte/transition';
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 
@@ -718,6 +721,69 @@
 
 			<div class="-mt-[0.5px]">
 				<div class="">
+					<Tooltip content={$i18n.t('Dashboard')} placement="right">
+						<a
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+							href="/dashboard"
+							draggable="false"
+							on:click={async (e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+								goto('/dashboard');
+								itemClickHandler();
+							}}
+							aria-label={$i18n.t('Dashboard')}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<ChartBar className="size-4.5" />
+							</div>
+						</a>
+					</Tooltip>
+				</div>
+				<div class="">
+					<Tooltip content={$i18n.t('Agenten')} placement="right">
+						<a
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+							href="/agenten"
+							draggable="false"
+							on:click={async (e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+								goto('/agenten');
+								itemClickHandler();
+							}}
+							aria-label={$i18n.t('Agenten')}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<Sparkles className="size-4.5" />
+							</div>
+						</a>
+					</Tooltip>
+				</div>
+				<div class="">
+					<Tooltip content={$i18n.t('CRM')} placement="right">
+						<a
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+							href="/crm"
+							draggable="false"
+							on:click={async (e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+								goto('/crm');
+								itemClickHandler();
+							}}
+							aria-label={$i18n.t('CRM')}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<UsersSolid className="size-4.5" />
+							</div>
+						</a>
+					</Tooltip>
+				</div>
+				<div class="px-1">
+					<hr class=" border-gray-100/40 dark:border-gray-800/10 my-1.5 w-full" />
+				</div>
+				<div class="">
 					<Tooltip content={$i18n.t('New Chat')} placement="right">
 						<a
 							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
@@ -951,6 +1017,60 @@
 				}}
 			>
 				<div class="pb-1.5">
+					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
+						<a
+							id="sidebar-dashboard-button"
+							class="group grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+							href="/dashboard"
+							on:click={itemClickHandler}
+							draggable="false"
+							aria-label={$i18n.t('Dashboard')}
+						>
+							<div class="self-center">
+								<ChartBar className=" size-4.5" strokeWidth="2" />
+							</div>
+							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('Dashboard')}</div>
+							</div>
+						</a>
+					</div>
+					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
+						<a
+							id="sidebar-agenten-button"
+							class="group grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+							href="/agenten"
+							on:click={itemClickHandler}
+							draggable="false"
+							aria-label={$i18n.t('Agenten')}
+						>
+							<div class="self-center">
+								<Sparkles className=" size-4.5" strokeWidth="2" />
+							</div>
+							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('Agenten')}</div>
+							</div>
+						</a>
+					</div>
+					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
+						<a
+							id="sidebar-crm-button"
+							class="group grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+							href="/crm"
+							on:click={itemClickHandler}
+							draggable="false"
+							aria-label={$i18n.t('CRM')}
+						>
+							<div class="self-center">
+								<UsersSolid className=" size-4.5" />
+							</div>
+							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('CRM')}</div>
+							</div>
+						</a>
+					</div>
+					<div class="px-[0.4375rem]">
+						<hr class=" border-gray-100/40 dark:border-gray-800/10 my-1.5 w-full" />
+					</div>
 					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
 						<a
 							id="sidebar-new-chat-button"

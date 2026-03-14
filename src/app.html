@@ -63,6 +63,12 @@
 				} else if (localStorage.theme === 'light') {
 					document.documentElement.classList.add('light');
 					metaThemeColorTag.setAttribute('content', '#ffffff');
+				} else if (localStorage.theme === 'rahmenwerk-light') {
+					document.documentElement.classList.add('light', 'rahmenwerk-light');
+					metaThemeColorTag.setAttribute('content', '#f2f2f2');
+				} else if (localStorage.theme === 'rahmenwerk-dark') {
+					document.documentElement.classList.add('dark', 'rahmenwerk-dark');
+					metaThemeColorTag.setAttribute('content', '#101010');
 				} else if (localStorage.theme === 'her') {
 					document.documentElement.classList.add('her');
 					metaThemeColorTag.setAttribute('content', '#983724');
@@ -187,6 +193,14 @@
 
 		html.dark #splash-screen {
 			background: #000;
+		}
+
+		html.rahmenwerk-light #splash-screen {
+			background: #f2f2f2;
+		}
+
+		html.rahmenwerk-dark #splash-screen {
+			background: #101010;
 		}
 
 		html.her #splash-screen {

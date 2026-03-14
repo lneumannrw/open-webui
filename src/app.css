@@ -801,3 +801,124 @@ body {
 #note-content-container .ProseMirror {
 	padding-bottom: 2rem; /* space for the bottom toolbar */
 }
+
+/* Rahmenwerk theme – Corporate Design (Primary #fa3205, Bright #f2f2f2, Dark #101010) */
+html.rahmenwerk-light {
+	--color-gray-50: #f2f2f2;
+	--color-gray-100: #e8e8e8;
+	--color-gray-200: #d8d8d8;
+	--color-gray-300: #c2c2c2;
+	--color-gray-400: #909090;
+	--color-gray-500: #606060;
+	--color-gray-600: #484848;
+	--color-gray-700: #383838;
+	--color-gray-800: #282828;
+	--color-gray-850: #1c1c1c;
+	--color-gray-900: #141414;
+	--color-gray-950: #0c0c0c;
+	--color-primary: #fa3205;
+	--color-primary-hover: #e02d04;
+	--color-primary-muted: rgba(250, 50, 5, 0.08);
+}
+
+html.rahmenwerk-dark {
+	--color-gray-50: #f2f2f2;
+	--color-gray-100: #e5e5e5;
+	--color-gray-200: #d0d0d0;
+	--color-gray-300: #b0b0b0;
+	--color-gray-400: #909090;
+	--color-gray-500: #707070;
+	--color-gray-600: #505050;
+	--color-gray-700: #404040;
+	--color-gray-800: #262626;
+	--color-gray-850: #1a1a1a;
+	--color-gray-900: #141414;
+	--color-gray-950: #101010;
+	--color-primary: #fa3205;
+	--color-primary-hover: #e02d04;
+	--color-primary-muted: rgba(250, 50, 5, 0.12);
+}
+
+/* Rahmenwerk: text links – default normal/white, primary only on hover */
+html.rahmenwerk-light a:hover,
+html.rahmenwerk-light .marked a:hover,
+html.rahmenwerk-light .markdown a:hover,
+html.rahmenwerk-light .prose a:hover,
+html.rahmenwerk-light .input-prose a:hover,
+html.rahmenwerk-dark a:hover,
+html.rahmenwerk-dark .marked a:hover,
+html.rahmenwerk-dark .markdown a:hover,
+html.rahmenwerk-dark .prose a:hover,
+html.rahmenwerk-dark .input-prose a:hover {
+	color: var(--color-primary) !important;
+}
+
+/* Rahmenwerk Light: primary buttons (bg-black text-white) */
+html.rahmenwerk-light button.bg-black.text-white,
+html.rahmenwerk-light a.bg-black.text-white,
+html.rahmenwerk-light input[type='submit'].bg-black.text-white {
+	background-color: var(--color-primary) !important;
+}
+
+html.rahmenwerk-light button.bg-black.text-white:hover,
+html.rahmenwerk-light a.bg-black.text-white:hover,
+html.rahmenwerk-light input[type='submit'].bg-black.text-white:hover {
+	background-color: var(--color-primary-hover) !important;
+}
+
+/* Rahmenwerk Dark: primary buttons (dark:bg-white dark:text-black) */
+html.rahmenwerk-dark button.dark\:bg-white.dark\:text-black,
+html.rahmenwerk-dark a.dark\:bg-white.dark\:text-black,
+html.rahmenwerk-dark input[type='submit'].dark\:bg-white.dark\:text-black {
+	background-color: var(--color-primary) !important;
+	color: #fff !important;
+}
+
+html.rahmenwerk-dark button.dark\:bg-white.dark\:text-black:hover,
+html.rahmenwerk-dark a.dark\:bg-white.dark\:text-black:hover,
+html.rahmenwerk-dark input[type='submit'].dark\:bg-white.dark\:text-black:hover {
+	background-color: var(--color-primary-hover) !important;
+	color: #fff !important;
+}
+
+/* Rahmenwerk: hover text/icons -> primary */
+html.rahmenwerk-light .hover\:text-gray-700:hover,
+html.rahmenwerk-light .hover\:text-gray-900:hover,
+html.rahmenwerk-dark .hover\:text-gray-700:hover,
+html.rahmenwerk-dark .hover\:text-gray-900:hover {
+	color: var(--color-primary) !important;
+}
+
+html.rahmenwerk-dark .dark\:hover\:text-white:hover {
+	color: var(--color-primary) !important;
+}
+
+html.rahmenwerk-light .group:hover .group-hover\:text-gray-600,
+html.rahmenwerk-dark .group:hover .dark\:group-hover\:text-white {
+	color: var(--color-primary) !important;
+}
+
+/* Optional: blue/emerald and toggles -> primary */
+html.rahmenwerk-light .bg-blue-600,
+html.rahmenwerk-dark .bg-blue-600 {
+	background-color: var(--color-primary) !important;
+}
+
+html.rahmenwerk-light .bg-emerald-600,
+html.rahmenwerk-light .bg-emerald-500,
+html.rahmenwerk-dark .bg-emerald-600,
+html.rahmenwerk-dark .bg-emerald-500 {
+	background-color: var(--color-primary) !important;
+}
+
+html.rahmenwerk-light .peer-checked\:bg-blue-600,
+html.rahmenwerk-dark .peer-checked\:bg-blue-600 {
+	background-color: var(--color-primary) !important;
+}
+
+html.rahmenwerk-light .hover\:bg-blue-700:hover,
+html.rahmenwerk-light .hover\:bg-emerald-700:hover,
+html.rahmenwerk-dark .hover\:bg-blue-700:hover,
+html.rahmenwerk-dark .hover\:bg-emerald-700:hover {
+	background-color: var(--color-primary-hover) !important;
+}

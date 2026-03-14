@@ -124,13 +124,22 @@
 	});
 
 	const applyTheme = (_theme: string) => {
-		let themeToApply = _theme === 'oled-dark' ? 'dark' : _theme === 'her' ? 'light' : _theme;
+		let themeToApply =
+			_theme === 'oled-dark'
+				? 'dark'
+				: _theme === 'her'
+					? 'light'
+					: _theme === 'rahmenwerk-light'
+						? 'light'
+						: _theme === 'rahmenwerk-dark'
+							? 'dark'
+							: _theme;
 
 		if (_theme === 'system') {
 			themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 		}
 
-		if (themeToApply === 'dark' && !_theme.includes('oled')) {
+		if (themeToApply === 'dark' && !_theme.includes('oled') && _theme !== 'rahmenwerk-dark') {
 			document.documentElement.style.setProperty('--color-gray-800', '#333');
 			document.documentElement.style.setProperty('--color-gray-850', '#262626');
 			document.documentElement.style.setProperty('--color-gray-900', '#171717');
@@ -148,6 +157,13 @@
 		themeToApply.split(' ').forEach((e) => {
 			document.documentElement.classList.add(e);
 		});
+
+		document.documentElement.classList.remove('rahmenwerk-light', 'rahmenwerk-dark');
+		if (_theme === 'rahmenwerk-light') {
+			document.documentElement.classList.add('rahmenwerk-light');
+		} else if (_theme === 'rahmenwerk-dark') {
+			document.documentElement.classList.add('rahmenwerk-dark');
+		}
 
 		const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 		if (metaThemeColor) {
@@ -167,7 +183,11 @@
 							? '#000000'
 							: _theme === 'her'
 								? '#983724'
-								: '#ffffff'
+								: _theme === 'rahmenwerk-light'
+									? '#f2f2f2'
+									: _theme === 'rahmenwerk-dark'
+										? '#101010'
+										: '#ffffff'
 				);
 			}
 		}
@@ -214,6 +234,8 @@
 						<option value="dark">🌑 {$i18n.t('Dark')}</option>
 						<option value="oled-dark">🌃 {$i18n.t('OLED Dark')}</option>
 						<option value="light">☀️ {$i18n.t('Light')}</option>
+						<option value="rahmenwerk-light">Rahmenwerk (Hell)</option>
+						<option value="rahmenwerk-dark">Rahmenwerk (Dunkel)</option>
 						{#if $config?.features?.enable_easter_eggs}
 							<option value="her">🌷 Her</option>
 						{/if}

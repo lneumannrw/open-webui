@@ -59,7 +59,7 @@
 
 		if (res) {
 			toast.success($i18n.t('Knowledge created successfully.'));
-			goto(`/workspace/knowledge/${res.id}`);
+			goto(`/knowledge/${res.id}`);
 		}
 
 		loading = false;
@@ -72,7 +72,7 @@
 	<button
 		class="flex space-x-1"
 		on:click={() => {
-			goto('/workspace/knowledge');
+			goto('/knowledge');
 		}}
 	>
 		<div class=" self-center">

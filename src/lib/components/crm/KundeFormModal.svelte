@@ -3,7 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { getContext } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
-	import type { KundeStatus } from '$lib/types/kunden';
+	import type { Kunde, KundeStatus } from '$lib/types/kunden';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Modal from '$lib/components/common/Modal.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
@@ -16,6 +16,7 @@
 	const dispatch = createEventDispatcher();
 
 	export let show = false;
+	export let editItem: Kunde | null = null;
 
 	let loading = false;
 	let form = {
@@ -34,20 +35,37 @@
 	};
 
 	$: if (show) {
-		form = {
-			unternehmensname: '',
-			rechtsform: '',
-			status: 'Lead',
-			email_zentrale: '',
-			telefon_zentrale: '',
-			website: '',
-			strasse: '',
-			plz: '',
-			ort: '',
-			land: 'Deutschland',
-			branche: '',
-			notizen: ''
-		};
+		if (editItem) {
+			form = {
+				unternehmensname: editItem.unternehmensname ?? '',
+				rechtsform: editItem.rechtsform ?? '',
+				status: editItem.status ?? 'Lead',
+				email_zentrale: editItem.email_zentrale ?? '',
+				telefon_zentrale: editItem.telefon_zentrale ?? '',
+				website: editItem.website ?? '',
+				strasse: editItem.strasse ?? '',
+				plz: editItem.plz ?? '',
+				ort: editItem.ort ?? '',
+				land: editItem.land ?? 'Deutschland',
+				branche: editItem.branche ?? '',
+				notizen: editItem.notizen ?? ''
+			};
+		} else {
+			form = {
+				unternehmensname: '',
+				rechtsform: '',
+				status: 'Lead',
+				email_zentrale: '',
+				telefon_zentrale: '',
+				website: '',
+				strasse: '',
+				plz: '',
+				ort: '',
+				land: 'Deutschland',
+				branche: '',
+				notizen: ''
+			};
+		}
 	}
 
 	const statusOptions: KundeStatus[] = ['Lead', 'Aktiv', 'Inaktiv', 'Gesperrt'];
@@ -74,14 +92,23 @@
 			rechtsform: form.rechtsform.trim() || null
 		};
 
-		const { error } = await supabase.from('kunden').insert(payload);
-
-		loading = false;
-		if (error) {
-			toast.error(error.message || i18n.t('Fehler beim Speichern.'));
-			return;
+		if (editItem) {
+			const { error } = await supabase.from('kunden').update(payload).eq('id', editItem.id);
+			loading = false;
+			if (error) {
+				toast.error(error.message || i18n.t('Fehler beim Speichern.'));
+				return;
+			}
+			toast.success(i18n.t('Kunde wurde aktualisiert.'));
+		} else {
+			const { error } = await supabase.from('kunden').insert(payload);
+			loading = false;
+			if (error) {
+				toast.error(error.message || i18n.t('Fehler beim Speichern.'));
+				return;
+			}
+			toast.success(i18n.t('Kunde wurde angelegt.'));
 		}
-		toast.success(i18n.t('Kunde wurde angelegt.'));
 		dispatch('save');
 		show = false;
 	}
@@ -90,7 +117,7 @@
 <Modal size="md" bind:show>
 	<div class="modal-content">
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class="text-lg font-medium self-center">{i18n.t('Neuer Kunde')}</div>
+			<div class="text-lg font-medium self-center">{editItem ? i18n.t('Kunde bearbeiten') : i18n.t('Neuer Kunde')}</div>
 			<button
 				class="self-center"
 				aria-label={i18n.t('Close')}

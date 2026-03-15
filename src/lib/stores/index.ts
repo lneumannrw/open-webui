@@ -84,6 +84,19 @@ export const audioQueue = writable<AudioQueue | null>(null);
 export const sidebarWidth = writable(260);
 
 export const showSidebar = writable(false);
+
+/** CRM view mode: 'gallery' | 'list', persisted in localStorage */
+const CRM_VIEW_KEY = 'crm_view_mode';
+function getInitialCrmViewMode(): 'gallery' | 'list' {
+	if (typeof window === 'undefined') return 'gallery';
+	const stored = localStorage.getItem(CRM_VIEW_KEY);
+	return stored === 'list' ? 'list' : 'gallery';
+}
+export const crmViewMode: Writable<'gallery' | 'list'> = writable(getInitialCrmViewMode());
+export function setCrmViewMode(value: 'gallery' | 'list') {
+	crmViewMode.set(value);
+	if (typeof window !== 'undefined') localStorage.setItem(CRM_VIEW_KEY, value);
+}
 export const showSearch = writable(false);
 export const showSettings = writable(false);
 export const showShortcuts = writable(false);

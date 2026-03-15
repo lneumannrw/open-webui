@@ -4,7 +4,7 @@
 	import { getContext } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
 	import type { Kunde } from '$lib/types/kunden';
-	import type { AnfrageStatus } from '$lib/types/anfragen';
+	import type { AnfrageStatus, AnfrageWithKunde } from '$lib/types/anfragen';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Modal from '$lib/components/common/Modal.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
@@ -17,6 +17,7 @@
 	const dispatch = createEventDispatcher();
 
 	export let show = false;
+	export let editItem: AnfrageWithKunde | null = null;
 	export let kunden: Kunde[] = [];
 
 	let loading = false;
@@ -37,13 +38,23 @@
 	];
 
 	$: if (show) {
-		form = {
-			kunden_id: '',
-			titel: '',
-			beschreibung: '',
-			status: 'Neu',
-			budget: ''
-		};
+		if (editItem) {
+			form = {
+				kunden_id: editItem.kunden_id ?? '',
+				titel: editItem.titel ?? '',
+				beschreibung: editItem.beschreibung ?? '',
+				status: editItem.status ?? 'Neu',
+				budget: editItem.budget != null ? String(editItem.budget) : ''
+			};
+		} else {
+			form = {
+				kunden_id: '',
+				titel: '',
+				beschreibung: '',
+				status: 'Neu',
+				budget: ''
+			};
+		}
 	}
 
 	async function submitHandler() {
@@ -62,14 +73,23 @@
 			budget: budgetNum !== null && !Number.isNaN(budgetNum) ? budgetNum : null
 		};
 
-		const { error } = await supabase.from('anfragen').insert(payload);
-
-		loading = false;
-		if (error) {
-			toast.error(error.message || i18n.t('Fehler beim Speichern.'));
-			return;
+		if (editItem) {
+			const { error } = await supabase.from('anfragen').update(payload).eq('id', editItem.id);
+			loading = false;
+			if (error) {
+				toast.error(error.message || i18n.t('Fehler beim Speichern.'));
+				return;
+			}
+			toast.success(i18n.t('Anfrage wurde aktualisiert.'));
+		} else {
+			const { error } = await supabase.from('anfragen').insert(payload);
+			loading = false;
+			if (error) {
+				toast.error(error.message || i18n.t('Fehler beim Speichern.'));
+				return;
+			}
+			toast.success(i18n.t('Anfrage wurde angelegt.'));
 		}
-		toast.success(i18n.t('Anfrage wurde angelegt.'));
 		dispatch('save');
 		show = false;
 	}
@@ -78,7 +98,7 @@
 <Modal size="md" bind:show>
 	<div class="modal-content">
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class="text-lg font-medium self-center">{i18n.t('Neue Anfrage')}</div>
+			<div class="text-lg font-medium self-center">{editItem ? i18n.t('Anfrage bearbeiten') : i18n.t('Neue Anfrage')}</div>
 			<button
 				class="self-center"
 				aria-label={i18n.t('Close')}

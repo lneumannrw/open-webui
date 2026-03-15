@@ -10,6 +10,7 @@
 			: { t: (key: string) => key };
 
 	export let anfragen: AnfrageWithKunde[] = [];
+	export let onRowClick: ((a: AnfrageWithKunde) => void) | undefined = undefined;
 
 	function statusBadgeType(status: AnfrageWithKunde['status']): string {
 		switch (status) {
@@ -61,7 +62,22 @@
 		</thead>
 		<tbody>
 			{#each anfragen as a (a.id)}
-				<tr class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs">
+				<tr
+					class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs {onRowClick
+						? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-850/50 transition'
+						: ''}"
+					role={onRowClick ? 'button' : undefined}
+					tabindex={onRowClick ? 0 : undefined}
+					on:click={onRowClick ? () => onRowClick(a) : undefined}
+					on:keydown={onRowClick
+						? (e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									onRowClick(a);
+								}
+							}
+						: undefined}
+				>
 					<td class="px-3 py-1 font-medium text-gray-900 dark:text-white max-w-48 truncate">
 						{a.titel ?? '–'}
 					</td>

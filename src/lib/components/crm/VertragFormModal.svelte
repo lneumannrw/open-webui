@@ -4,7 +4,7 @@
 	import { getContext } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
 	import type { Kunde } from '$lib/types/kunden';
-	import type { AnsprechpartnerWithKunde } from '$lib/types/ansprechpartner';
+	import type { VertragWithKunde } from '$lib/types/vertraege';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Modal from '$lib/components/common/Modal.svelte';
 	import XMark from '$lib/components/icons/XMark.svelte';
@@ -17,73 +17,74 @@
 	const dispatch = createEventDispatcher();
 
 	export let show = false;
-	export let editItem: AnsprechpartnerWithKunde | null = null;
+	export let editItem: VertragWithKunde | null = null;
 	export let kunden: Kunde[] = [];
 
 	let loading = false;
 	let form = {
-		kunden_id: '',
-		vorname: '',
-		nachname: '',
-		email: '',
-		telefon: '',
-		position: ''
+		kunde_id: '',
+		vertragsnummer: '',
+		bezeichnung: '',
+		wert: '',
+		startdatum: '',
+		enddatum: ''
 	};
 
 	$: if (show) {
 		if (editItem) {
 			form = {
-				kunden_id: editItem.kunden_id ?? '',
-				vorname: editItem.vorname ?? '',
-				nachname: editItem.nachname ?? '',
-				email: editItem.email ?? '',
-				telefon: editItem.telefon ?? '',
-				position: editItem.position ?? ''
+				kunde_id: editItem.kunde_id ?? '',
+				vertragsnummer: editItem.vertragsnummer ?? '',
+				bezeichnung: editItem.bezeichnung ?? '',
+				wert: editItem.wert != null ? String(editItem.wert) : '',
+				startdatum: editItem.startdatum ?? '',
+				enddatum: editItem.enddatum ?? ''
 			};
 		} else {
 			form = {
-				kunden_id: '',
-				vorname: '',
-				nachname: '',
-				email: '',
-				telefon: '',
-				position: ''
+				kunde_id: '',
+				vertragsnummer: '',
+				bezeichnung: '',
+				wert: '',
+				startdatum: '',
+				enddatum: ''
 			};
 		}
 	}
 
 	async function submitHandler() {
-		if (!form.kunden_id?.trim()) {
+		if (!form.kunde_id?.trim()) {
 			toast.error(i18n.t('Bitte einen Kunden auswählen.'));
 			return;
 		}
 
 		loading = true;
+		const wertNum = form.wert.trim() ? parseFloat(form.wert.replace(',', '.')) : null;
 		const payload = {
-			kunden_id: form.kunden_id.trim(),
-			vorname: form.vorname.trim() || null,
-			nachname: form.nachname.trim() || null,
-			email: form.email.trim() || null,
-			telefon: form.telefon.trim() || null,
-			position: form.position.trim() || null
+			kunde_id: form.kunde_id.trim(),
+			vertragsnummer: form.vertragsnummer.trim() || null,
+			bezeichnung: form.bezeichnung.trim() || null,
+			wert: wertNum !== null && !Number.isNaN(wertNum) ? wertNum : null,
+			startdatum: form.startdatum.trim() || null,
+			enddatum: form.enddatum.trim() || null
 		};
 
 		if (editItem) {
-			const { error } = await supabase.from('ansprechpartner').update(payload).eq('id', editItem.id);
+			const { error } = await supabase.from('vertraege').update(payload).eq('id', editItem.id);
 			loading = false;
 			if (error) {
 				toast.error(error.message || i18n.t('Fehler beim Speichern.'));
 				return;
 			}
-			toast.success(i18n.t('Ansprechpartner wurde aktualisiert.'));
+			toast.success(i18n.t('Vertrag wurde aktualisiert.'));
 		} else {
-			const { error } = await supabase.from('ansprechpartner').insert(payload);
+			const { error } = await supabase.from('vertraege').insert(payload);
 			loading = false;
 			if (error) {
 				toast.error(error.message || i18n.t('Fehler beim Speichern.'));
 				return;
 			}
-			toast.success(i18n.t('Ansprechpartner wurde angelegt.'));
+			toast.success(i18n.t('Vertrag wurde angelegt.'));
 		}
 		dispatch('save');
 		show = false;
@@ -93,7 +94,7 @@
 <Modal size="md" bind:show>
 	<div class="modal-content">
 		<div class="flex justify-between dark:text-gray-300 px-5 pt-4 pb-2">
-			<div class="text-lg font-medium self-center">{editItem ? i18n.t('Ansprechpartner bearbeiten') : i18n.t('Neuer Ansprechpartner')}</div>
+			<div class="text-lg font-medium self-center">{editItem ? i18n.t('Vertrag bearbeiten') : i18n.t('Neuer Vertrag')}</div>
 			<button
 				class="self-center"
 				aria-label={i18n.t('Close')}
@@ -111,13 +112,13 @@
 				on:submit|preventDefault={submitHandler}
 			>
 				<div class="flex flex-col w-full mb-3">
-					<label class="mb-1 text-xs text-gray-500" for="ap-kunde">
+					<label class="mb-1 text-xs text-gray-500" for="vertrag-kunde">
 						{i18n.t('Kunde')} *
 					</label>
 					<select
-						id="ap-kunde"
+						id="vertrag-kunde"
 						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
-						bind:value={form.kunden_id}
+						bind:value={form.kunde_id}
 						required
 					>
 						<option value="">{i18n.t('Bitte Kunde wählen')}</option>
@@ -128,67 +129,66 @@
 				</div>
 
 				<div class="flex flex-col w-full mb-3">
-					<label class="mb-1 text-xs text-gray-500" for="ap-vorname">
-						{i18n.t('Vorname')}
+					<label class="mb-1 text-xs text-gray-500" for="vertrag-vertragsnummer">
+						{i18n.t('Vertragsnummer')}
 					</label>
 					<input
-						id="ap-vorname"
+						id="vertrag-vertragsnummer"
 						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
 						type="text"
-						bind:value={form.vorname}
-						placeholder={i18n.t('Vorname')}
+						bind:value={form.vertragsnummer}
+						placeholder={i18n.t('z.B. V-2024-001')}
 					/>
 				</div>
 
 				<div class="flex flex-col w-full mb-3">
-					<label class="mb-1 text-xs text-gray-500" for="ap-nachname">
-						{i18n.t('Nachname')}
+					<label class="mb-1 text-xs text-gray-500" for="vertrag-bezeichnung">
+						{i18n.t('Bezeichnung')}
 					</label>
 					<input
-						id="ap-nachname"
+						id="vertrag-bezeichnung"
 						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
 						type="text"
-						bind:value={form.nachname}
-						placeholder={i18n.t('Nachname')}
+						bind:value={form.bezeichnung}
+						placeholder={i18n.t('Vertragsbezeichnung')}
 					/>
 				</div>
 
 				<div class="flex flex-col w-full mb-3">
-					<label class="mb-1 text-xs text-gray-500" for="ap-email">
-						{i18n.t('E-Mail')}
+					<label class="mb-1 text-xs text-gray-500" for="vertrag-wert">
+						{i18n.t('Wert')}
 					</label>
 					<input
-						id="ap-email"
-						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
-						type="email"
-						bind:value={form.email}
-						placeholder="email@firma.de"
-					/>
-				</div>
-
-				<div class="flex flex-col w-full mb-3">
-					<label class="mb-1 text-xs text-gray-500" for="ap-telefon">
-						{i18n.t('Telefon')}
-					</label>
-					<input
-						id="ap-telefon"
-						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
-						type="tel"
-						bind:value={form.telefon}
-						placeholder="+49 123 456789"
-					/>
-				</div>
-
-				<div class="flex flex-col w-full mb-3">
-					<label class="mb-1 text-xs text-gray-500" for="ap-position">
-						{i18n.t('Position')}
-					</label>
-					<input
-						id="ap-position"
+						id="vertrag-wert"
 						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
 						type="text"
-						bind:value={form.position}
-						placeholder={i18n.t('z.B. Geschäftsführung')}
+						inputmode="decimal"
+						bind:value={form.wert}
+						placeholder="0"
+					/>
+				</div>
+
+				<div class="flex flex-col w-full mb-3">
+					<label class="mb-1 text-xs text-gray-500" for="vertrag-startdatum">
+						{i18n.t('Startdatum')}
+					</label>
+					<input
+						id="vertrag-startdatum"
+						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
+						type="date"
+						bind:value={form.startdatum}
+					/>
+				</div>
+
+				<div class="flex flex-col w-full mb-3">
+					<label class="mb-1 text-xs text-gray-500" for="vertrag-enddatum">
+						{i18n.t('Enddatum')}
+					</label>
+					<input
+						id="vertrag-enddatum"
+						class="w-full text-sm bg-transparent dark:disabled:text-gray-500 outline-hidden rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
+						type="date"
+						bind:value={form.enddatum}
 					/>
 				</div>
 

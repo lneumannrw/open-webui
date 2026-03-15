@@ -9,6 +9,7 @@
 			: { t: (key: string) => key };
 
 	export let ansprechpartner: AnsprechpartnerWithKunde[] = [];
+	export let onRowClick: ((ap: AnsprechpartnerWithKunde) => void) | undefined = undefined;
 
 	function displayName(ap: AnsprechpartnerWithKunde): string {
 		const v = ap.vorname?.trim() ?? '';
@@ -43,7 +44,22 @@
 		</thead>
 		<tbody>
 			{#each ansprechpartner as ap (ap.id)}
-				<tr class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs">
+				<tr
+					class="bg-white dark:bg-gray-900 dark:border-gray-850 text-xs {onRowClick
+						? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-850/50 transition'
+						: ''}"
+					role={onRowClick ? 'button' : undefined}
+					tabindex={onRowClick ? 0 : undefined}
+					on:click={onRowClick ? () => onRowClick(ap) : undefined}
+					on:keydown={onRowClick
+						? (e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									onRowClick(ap);
+								}
+							}
+						: undefined}
+				>
 					<td class="px-3 py-1 font-medium text-gray-900 dark:text-white max-w-48 truncate">
 						{displayName(ap)}
 					</td>

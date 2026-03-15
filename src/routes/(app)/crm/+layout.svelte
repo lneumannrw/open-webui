@@ -9,6 +9,7 @@
 	import User from '$lib/components/icons/User.svelte';
 	import Folder from '$lib/components/icons/Folder.svelte';
 	import Document from '$lib/components/icons/Document.svelte';
+	import ChartBar from '$lib/components/icons/ChartBar.svelte';
 
 	const i18nRaw = getContext('i18n');
 	const i18n = i18nRaw && typeof (i18nRaw as any)?.t === 'function' ? i18nRaw : { t: (key: string) => key };
@@ -58,6 +59,17 @@
 					<div
 						class="flex gap-1 scrollbar-none overflow-x-auto w-fit text-center text-sm font-medium rounded-full bg-transparent py-1"
 					>
+						<a
+							draggable="false"
+							aria-current={$page.url.pathname.includes('/crm/dashboard') ? 'page' : null}
+							class="min-w-fit p-1.5 flex items-center gap-1.5 {$page.url.pathname.includes('/crm/dashboard')
+								? ''
+								: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
+							href="/crm/dashboard"
+						>
+							<ChartBar className="size-4 shrink-0" />
+							{i18n.t('Dashboard')}
+						</a>
 						<a
 							draggable="false"
 							aria-current={$page.url.pathname.includes('/crm/kunden') ? 'page' : null}

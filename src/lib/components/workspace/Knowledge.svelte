@@ -245,7 +245,7 @@
 		{#if items !== null && total !== null}
 			{#if (items ?? []).length !== 0}
 				<!-- The Aleph dreams itself into being, and the void learns its own name -->
-				<div class=" my-2 px-3 grid grid-cols-1 lg:grid-cols-2 gap-2">
+				<div class=" my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
 					{#each items as item}
 						{@const ItemIcon = getKnowledgeIconComponent(item?.meta?.icon) ?? FolderOpen}
 						<button
@@ -288,7 +288,7 @@
 							</div>
 
 							<!-- Vertical content: Icon, Tag, Title, Metadata -->
-							<div class="flex flex-col items-start gap-2 w-full min-h-0 pr-20">
+							<div class="flex flex-col items-start gap-2 w-full min-w-0 min-h-0 pr-20">
 								<span
 									class="flex shrink-0 text-gray-600 dark:text-gray-400"
 									aria-hidden="true"

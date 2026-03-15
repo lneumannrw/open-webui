@@ -19,6 +19,8 @@
 	export let show = false;
 	export let editItem: AnsprechpartnerWithKunde | null = null;
 	export let kunden: Kunde[] = [];
+	/** When opening for "new", pre-fill this kunden_id (e.g. from overlay context). */
+	export let initialKundenId: string | null = null;
 
 	let loading = false;
 	let form = {
@@ -42,7 +44,7 @@
 			};
 		} else {
 			form = {
-				kunden_id: '',
+				kunden_id: initialKundenId ?? '',
 				vorname: '',
 				nachname: '',
 				email: '',

@@ -27,6 +27,14 @@ export interface Kunde {
 	land: string | null;
 	branche: string | null;
 	notizen: string | null;
+	/** Interne Notizen (Supabase), debounced auto-save */
+	interne_notizen?: string | null;
+	/** Verknüpfte WebUI-Notizen (IDs) */
+	linked_webui_notes_ids?: string[] | null;
+	/** Verknüpfte Wissensspeicher (Knowledge Collection IDs) */
+	knowledge_collection_ids?: string[] | null;
+	/** Logo URL nach Upload in Supabase Storage */
+	logo_url?: string | null;
 	created_at: string;
 	updated_at: string;
 }

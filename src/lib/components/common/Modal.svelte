@@ -20,6 +20,9 @@
 		if (size === 'full') {
 			return 'w-full';
 		}
+		if (size === 'xl-overlay') {
+			return 'w-[90vw] max-w-[90vw]';
+		}
 		if (size === 'xs') {
 			return 'w-[16rem]';
 		} else if (size === 'sm') {
@@ -102,9 +105,9 @@
 		}}
 	>
 		<div
-			class="m-auto max-w-full {sizeToWidth(size)} {size !== 'full'
+			class="m-auto max-w-full {sizeToWidth(size)} {size !== 'full' && size !== 'xl-overlay'
 				? 'mx-2'
-				: ''} shadow-3xl min-h-fit scrollbar-hidden {className} border border-white dark:border-gray-850"
+				: ''} {size === 'xl-overlay' ? 'max-h-[90vh] min-h-[80vh] flex flex-col overflow-hidden' : 'min-h-fit'} scrollbar-hidden {className} border border-white dark:border-gray-850 shadow-3xl"
 			in:flyAndScale
 			on:mousedown={(e) => {
 				e.stopPropagation();

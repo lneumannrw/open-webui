@@ -1263,6 +1263,7 @@
 						bind:open={showFolders}
 						className="px-2 mt-0.5"
 						name={$i18n.t('Folders')}
+						nameHref="/folders"
 						chevron={false}
 						onAdd={() => {
 							showCreateFolderModal = true;

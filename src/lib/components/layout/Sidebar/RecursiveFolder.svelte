@@ -582,7 +582,7 @@
 					{/if}
 				</button>
 
-				<div class="translate-y-[0.5px] flex-1 justify-start text-start line-clamp-1">
+				<div class="translate-y-[0.5px] flex-1 justify-start text-start line-clamp-1 min-w-0">
 					{#if edit}
 						<input
 							id="folder-{folderId}-input"
@@ -610,7 +610,14 @@
 							class="w-full h-full bg-transparent outline-hidden"
 						/>
 					{:else}
-						{folders[folderId].name}
+						<a
+							href="/folders/{folderId}"
+							class="block truncate text-inherit hover:underline focus:outline-none focus:underline"
+							on:click={(e) => e.stopPropagation()}
+							on:pointerup={(e) => e.stopPropagation()}
+						>
+							{folders[folderId].name}
+						</a>
 					{/if}
 				</div>
 

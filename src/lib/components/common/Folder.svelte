@@ -20,6 +20,8 @@
 	export let buttonClassName = 'text-gray-600 dark:text-gray-400';
 
 	export let chevron = true;
+	/** When set, the name is rendered as a link to this href (e.g. /folders). Click does not toggle collapse. */
+	export let nameHref: string = '';
 	export let onAddLabel: string = '';
 	export let onAdd: null | Function = null;
 
@@ -152,9 +154,9 @@
 					id="sidebar-folder-button"
 					class=" w-full group rounded-xl relative flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-900 transition {buttonClassName}"
 				>
-					<button class="w-full py-1.5 pl-2 flex items-center gap-1.5 text-xs font-medium">
+					<div class="flex-1 min-w-0 py-1.5 pl-2 flex items-center gap-1.5 text-xs font-medium">
 						{#if chevron}
-							<div class=" p-[1px]">
+							<div class=" p-[1px] shrink-0">
 								{#if open}
 									<ChevronDown className=" size-3" strokeWidth="2" />
 								{:else}
@@ -163,10 +165,21 @@
 							</div>
 						{/if}
 
-						<div class="translate-y-[0.5px] {chevron ? '' : 'pl-0.5'}">
-							{name}
-						</div>
-					</button>
+						{#if nameHref}
+							<a
+								href={nameHref}
+								class="translate-y-[0.5px] truncate hover:text-gray-900 dark:hover:text-gray-100 hover:underline focus:outline-none focus:underline {chevron ? '' : 'pl-0.5'}"
+								on:click={(e) => e.stopPropagation()}
+								on:pointerup={(e) => e.stopPropagation()}
+							>
+								{name}
+							</a>
+						{:else}
+							<div class="translate-y-[0.5px] {chevron ? '' : 'pl-0.5'}">
+								{name}
+							</div>
+						{/if}
+					</div>
 
 					{#if onAdd}
 						<button

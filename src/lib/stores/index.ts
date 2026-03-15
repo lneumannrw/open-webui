@@ -97,6 +97,22 @@ export function setCrmViewMode(value: 'gallery' | 'list') {
 	crmViewMode.set(value);
 	if (typeof window !== 'undefined') localStorage.setItem(CRM_VIEW_KEY, value);
 }
+
+/** Folder Explorer view mode: 'gallery' | 'list', persisted in localStorage */
+const FOLDER_EXPLORER_VIEW_KEY = 'folder_explorer_view_mode';
+function getInitialFolderExplorerViewMode(): 'gallery' | 'list' {
+	if (typeof window === 'undefined') return 'gallery';
+	const stored = localStorage.getItem(FOLDER_EXPLORER_VIEW_KEY);
+	return stored === 'list' ? 'list' : 'gallery';
+}
+export const folderExplorerViewMode: Writable<'gallery' | 'list'> = writable(
+	getInitialFolderExplorerViewMode()
+);
+export function setFolderExplorerViewMode(value: 'gallery' | 'list') {
+	folderExplorerViewMode.set(value);
+	if (typeof window !== 'undefined') localStorage.setItem(FOLDER_EXPLORER_VIEW_KEY, value);
+}
+
 export const showSearch = writable(false);
 export const showSettings = writable(false);
 export const showShortcuts = writable(false);

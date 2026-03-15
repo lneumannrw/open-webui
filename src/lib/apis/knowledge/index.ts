@@ -1,12 +1,28 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 
+export type KnowledgeMeta = {
+	custom_tag?: string;
+	icon?: string;
+	tag_color?: string;
+};
+
 export const createNewKnowledge = async (
 	token: string,
 	name: string,
 	description: string,
-	accessGrants: object[]
+	accessGrants: object[],
+	meta?: KnowledgeMeta | null
 ) => {
 	let error = null;
+
+	const body: Record<string, unknown> = {
+		name,
+		description,
+		access_grants: accessGrants
+	};
+	if (meta != null && Object.keys(meta).length > 0) {
+		body.meta = meta;
+	}
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/create`, {
 		method: 'POST',
@@ -15,11 +31,7 @@ export const createNewKnowledge = async (
 			'Content-Type': 'application/json',
 			authorization: `Bearer ${token}`
 		},
-		body: JSON.stringify({
-			name: name,
-			description: description,
-			access_grants: accessGrants
-		})
+		body: JSON.stringify(body)
 	})
 		.then(async (res) => {
 			if (!res.ok) throw await res.json();
@@ -248,11 +260,22 @@ type KnowledgeUpdateForm = {
 	name?: string;
 	description?: string;
 	data?: object;
+	meta?: KnowledgeMeta | null;
 	access_grants?: object[];
 };
 
 export const updateKnowledgeById = async (token: string, id: string, form: KnowledgeUpdateForm) => {
 	let error = null;
+
+	const body: Record<string, unknown> = {
+		name: form?.name ?? undefined,
+		description: form?.description ?? undefined,
+		data: form?.data ?? undefined,
+		access_grants: form.access_grants
+	};
+	if (form?.meta !== undefined && form.meta !== null) {
+		body.meta = form.meta;
+	}
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/knowledge/${id}/update`, {
 		method: 'POST',
@@ -261,12 +284,7 @@ export const updateKnowledgeById = async (token: string, id: string, form: Knowl
 			'Content-Type': 'application/json',
 			authorization: `Bearer ${token}`
 		},
-		body: JSON.stringify({
-			name: form?.name ? form.name : undefined,
-			description: form?.description ? form.description : undefined,
-			data: form?.data ? form.data : undefined,
-			access_grants: form.access_grants
-		})
+		body: JSON.stringify(body)
 	})
 		.then(async (res) => {
 			if (!res.ok) throw await res.json();

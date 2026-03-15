@@ -27,6 +27,8 @@
 	import XMark from '../icons/XMark.svelte';
 	import ViewSelector from './common/ViewSelector.svelte';
 	import Loader from '../common/Loader.svelte';
+	import { getKnowledgeIconComponent } from './Knowledge/knowledgeIcons';
+	import FolderOpen from '$lib/components/icons/FolderOpen.svelte';
 
 	let loaded = false;
 	let showDeleteConfirm = false;
@@ -245,8 +247,9 @@
 				<!-- The Aleph dreams itself into being, and the void learns its own name -->
 				<div class=" my-2 px-3 grid grid-cols-1 lg:grid-cols-2 gap-2">
 					{#each items as item}
+						{@const ItemIcon = getKnowledgeIconComponent(item?.meta?.icon) ?? FolderOpen}
 						<button
-							class=" flex space-x-4 cursor-pointer text-left w-full px-3 py-2.5 dark:hover:bg-gray-850/50 hover:bg-gray-50 transition rounded-2xl"
+							class="relative flex flex-col items-start gap-3 w-full p-4 text-left rounded-2xl transition dark:hover:bg-gray-850/50 hover:bg-gray-50 cursor-pointer"
 							on:click={() => {
 								if (item?.meta?.document) {
 									toast.error(
@@ -259,70 +262,74 @@
 								}
 							}}
 						>
-							<div class=" w-full">
-								<div class=" self-center flex-1 justify-between">
-									<div class="flex items-center justify-between -my-1 h-8">
-										<div class=" flex gap-2 items-center justify-between w-full">
-											<div>
-												<Badge type="success" content={$i18n.t('Collection')} />
-											</div>
-
-											{#if !item?.write_access}
-												<div>
-													<Badge type="muted" content={$i18n.t('Read Only')} />
-												</div>
-											{/if}
-										</div>
-
-										{#if item?.write_access || $user?.role === 'admin'}
-											<div class="flex items-center gap-2">
-												<div class=" flex self-center">
-													<ItemMenu
-														onExport={$user.role === 'admin'
-															? () => {
-																	exportHandler(item);
-																}
-															: null}
-														on:delete={() => {
-															selectedItem = item;
-															showDeleteConfirm = true;
-														}}
-													/>
-												</div>
-											</div>
-										{/if}
+							<!-- Top row: menu and Read Only in the corner -->
+							<div class="absolute right-4 top-4 flex items-center gap-2">
+								{#if !item?.write_access}
+									<Badge type="muted" content={$i18n.t('Read Only')} />
+								{/if}
+								{#if item?.write_access || $user?.role === 'admin'}
+									<div
+										class="flex shrink-0"
+										on:click|stopPropagation
+									>
+										<ItemMenu
+											onExport={$user.role === 'admin'
+												? () => {
+														exportHandler(item);
+													}
+												: null}
+											on:delete={() => {
+												selectedItem = item;
+												showDeleteConfirm = true;
+											}}
+										/>
 									</div>
+								{/if}
+							</div>
 
-									<div class=" flex items-center gap-1 justify-between px-1.5">
-										<Tooltip content={item?.description ?? item.name}>
-											<div class=" flex items-center gap-2">
-												<div class=" text-sm font-medium line-clamp-1 capitalize">{item.name}</div>
-											</div>
-										</Tooltip>
+							<!-- Vertical content: Icon, Tag, Title, Metadata -->
+							<div class="flex flex-col items-start gap-2 w-full min-h-0 pr-20">
+								<span
+									class="flex shrink-0 text-gray-600 dark:text-gray-400"
+									aria-hidden="true"
+								>
+									<svelte:component this={ItemIcon} className="size-10" />
+								</span>
 
-										<div class="flex items-center gap-2 shrink-0">
-											<Tooltip content={dayjs(item.updated_at * 1000).format('LLLL')}>
-												<div class=" text-xs text-gray-500 line-clamp-1 hidden sm:block">
-													{$i18n.t('Updated')}
-													{dayjs(item.updated_at * 1000).fromNow()}
-												</div>
-											</Tooltip>
+								<Badge
+									type="success"
+									content={item?.meta?.custom_tag ?? $i18n.t('Collection')}
+									tagColor={item?.meta?.tag_color}
+								/>
 
-											<div class="text-xs text-gray-500 shrink-0">
-												<Tooltip
-													content={item?.user?.email ?? $i18n.t('Deleted User')}
-													className="flex shrink-0"
-													placement="top-start"
-												>
-													{$i18n.t('By {{name}}', {
-														name: capitalizeFirstLetter(
-															item?.user?.name ?? item?.user?.email ?? $i18n.t('Deleted User')
-														)
-													})}
-												</Tooltip>
-											</div>
-										</div>
+								<Tooltip content={item?.description ?? item.name}>
+									<div
+										class="text-xl font-semibold text-gray-900 dark:text-white line-clamp-2 capitalize w-full"
+									>
+										{item.name}
 									</div>
+								</Tooltip>
+
+								<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
+									<Tooltip content={dayjs(item.updated_at * 1000).format('LLLL')}>
+										<span class="line-clamp-1">
+											{$i18n.t('Updated')}
+											{dayjs(item.updated_at * 1000).fromNow()}
+										</span>
+									</Tooltip>
+									<span class="shrink-0">·</span>
+									<Tooltip
+										content={item?.user?.email ?? $i18n.t('Deleted User')}
+										placement="top-start"
+									>
+										<span class="line-clamp-1">
+											{$i18n.t('By {{name}}', {
+												name: capitalizeFirstLetter(
+													item?.user?.name ?? item?.user?.email ?? $i18n.t('Deleted User')
+												)
+											})}
+										</span>
+									</Tooltip>
 								</div>
 							</div>
 						</button>

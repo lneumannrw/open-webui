@@ -121,6 +121,7 @@ class KnowledgeForm(BaseModel):
     name: str
     description: str
     access_grants: Optional[list[dict]] = None
+    meta: Optional[dict] = None
 
 
 class FileUserResponse(FileModelResponse):
@@ -672,13 +673,18 @@ class KnowledgeTable:
     ) -> Optional[KnowledgeModel]:
         try:
             with get_db_context(db) as db:
-                knowledge = self.get_knowledge_by_id(id=id, db=db)
-                db.query(Knowledge).filter_by(id=id).update(
-                    {
-                        **form_data.model_dump(exclude={"access_grants"}),
-                        "updated_at": int(time.time()),
-                    }
-                )
+                dump = form_data.model_dump(exclude={"access_grants"})
+                if dump.get("meta") is None:
+                    dump.pop("meta", None)
+                update_dict = {
+                    **dump,
+                    "updated_at": int(time.time()),
+                }
+                if form_data.meta is not None:
+                    existing = db.query(Knowledge).filter_by(id=id).first()
+                    existing_meta = (existing.meta if existing and existing.meta else {}).copy()
+                    update_dict["meta"] = {**existing_meta, **form_data.meta}
+                db.query(Knowledge).filter_by(id=id).update(update_dict)
                 db.commit()
                 if form_data.access_grants is not None:
                     AccessGrants.set_access_grants(

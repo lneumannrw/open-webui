@@ -55,6 +55,13 @@
 	import DropdownOptions from '$lib/components/common/DropdownOptions.svelte';
 	import Pagination from '$lib/components/common/Pagination.svelte';
 	import AttachWebpageModal from '$lib/components/chat/MessageInput/AttachWebpageModal.svelte';
+	import KnowledgeIconPicker from './KnowledgeIconPicker.svelte';
+	import {
+		getKnowledgeIconComponent,
+		KNOWLEDGE_TAG_COLORS,
+		TAG_COLOR_SWATCH_CLASS
+	} from './knowledgeIcons';
+	import FolderOpen from '$lib/components/icons/FolderOpen.svelte';
 
 	let largeScreen = true;
 
@@ -72,12 +79,13 @@
 		id: string;
 		name: string;
 		description: string;
-		data: {
+		data?: {
 			file_ids: string[];
 		};
 		files: any[];
 		access_grants?: any[];
 		write_access?: boolean;
+		meta?: { custom_tag?: string; icon?: string; tag_color?: string };
 	};
 
 	let id = null;
@@ -617,6 +625,7 @@
 				...knowledge,
 				name: knowledge.name,
 				description: knowledge.description,
+				meta: knowledge?.meta ?? {},
 				access_grants: knowledge.access_grants ?? []
 			}).catch((e) => {
 				toast.error(`${e}`);
@@ -751,6 +760,9 @@
 			if (!Array.isArray(knowledge?.access_grants)) {
 				knowledge.access_grants = [];
 			}
+			if (knowledge && !knowledge.meta) {
+				knowledge.meta = {};
+			}
 			knowledgeId = knowledge?.id;
 		} else {
 			goto('/workspace/knowledge');
@@ -770,6 +782,8 @@
 		dropZone?.removeEventListener('drop', onDrop);
 		dropZone?.removeEventListener('dragleave', onDragLeave);
 	});
+
+	$: headerIconComponent = getKnowledgeIconComponent(knowledge?.meta?.icon) ?? FolderOpen;
 
 	const decodeString = (str: string) => {
 		try {
@@ -913,6 +927,64 @@
 								changeDebounceHandler();
 							}}
 						/>
+					</div>
+
+					<div class="flex w-full flex-col gap-2 mt-1.5">
+						<div class="flex w-full items-center gap-3">
+							<div class="flex-1 min-w-0">
+								<input
+									type="text"
+									class="text-left text-xs w-full text-gray-500 bg-transparent outline-hidden"
+									bind:value={knowledge.meta.custom_tag}
+									aria-label={$i18n.t('Tag')}
+									placeholder={$i18n.t('Collection')}
+									disabled={!knowledge?.write_access}
+									on:input={() => {
+										changeDebounceHandler();
+									}}
+								/>
+							</div>
+							{#if knowledge?.write_access}
+								<div class="flex items-center gap-1.5 shrink-0">
+									<span class="text-xs text-gray-500 dark:text-gray-400">{$i18n.t('Tag color')}</span>
+									<div class="flex gap-1">
+										{#each KNOWLEDGE_TAG_COLORS as colorId}
+											<button
+												type="button"
+												class="size-5 rounded-full {TAG_COLOR_SWATCH_CLASS[colorId]} transition {knowledge?.meta?.tag_color === colorId
+													? 'ring-2 ring-offset-1 ring-gray-600 dark:ring-gray-400'
+													: 'hover:opacity-80'}"
+												aria-label={colorId}
+												on:click={() => {
+													if (!knowledge.meta) knowledge.meta = {};
+													knowledge.meta.tag_color =
+														knowledge.meta.tag_color === colorId ? '' : colorId;
+													changeDebounceHandler();
+												}}
+											/>
+										{/each}
+									</div>
+								</div>
+							{/if}
+							{#if knowledge?.write_access}
+								<KnowledgeIconPicker
+									selectedId={knowledge?.meta?.icon}
+									onSelect={(id) => {
+										if (!knowledge.meta) knowledge.meta = {};
+										knowledge.meta.icon = id;
+										changeDebounceHandler();
+									}}
+								>
+									<button
+										type="button"
+										class="shrink-0 flex items-center rounded-lg p-1.5 bg-gray-50 dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+										aria-label={$i18n.t('Icon')}
+									>
+										<svelte:component this={headerIconComponent} className="size-5" />
+									</button>
+								</KnowledgeIconPicker>
+							{/if}
+						</div>
 					</div>
 				</div>
 			</div>

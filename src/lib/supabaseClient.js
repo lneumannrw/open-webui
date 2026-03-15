@@ -6,4 +6,7 @@ const supabaseUrl = PUBLIC_SUPABASE_URL;
 const supabaseKey = PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
+/** Client scoped to `app` schema for app.dashboard_links etc. */
+export const supabaseApp = supabase.schema('app');
         

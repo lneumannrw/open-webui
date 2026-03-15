@@ -1,12 +1,29 @@
 <script>
 	import { getContext } from 'svelte';
+	import { onMount } from 'svelte';
 	import { showSidebar } from '$lib/stores';
 	import UserMenu from '$lib/components/layout/Sidebar/UserMenu.svelte';
 	import ChartBar from '$lib/components/icons/ChartBar.svelte';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import { user } from '$lib/stores';
+	import { fetchDashboardLinks } from '$lib/dashboardLinks';
+	import QuickLinkBar from '$lib/components/dashboard/QuickLinkBar.svelte';
+	import DashboardLinksEditModal from '$lib/components/dashboard/DashboardLinksEditModal.svelte';
 
 	const i18n = getContext('i18n');
+
+	let links = [];
+	let showLinksModal = false;
+
+	async function loadLinks() {
+		try {
+			links = await fetchDashboardLinks();
+		} catch (e) {
+			console.error('Failed to load dashboard links', e);
+		}
+	}
+
+	onMount(loadLinks);
 </script>
 
 <div
@@ -47,8 +64,23 @@
 
 	<div class=" flex-1 max-h-full overflow-y-auto p-4">
 		<h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{$i18n.t('Dashboard')}</h1>
+		{#if links.length > 0 || ($user?.role === 'admin')}
+			<div class="mt-4 mb-4">
+				<QuickLinkBar
+					links={links}
+					editable={$user?.role === 'admin'}
+					onAddClick={$user?.role === 'admin' ? () => (showLinksModal = true) : null}
+				/>
+			</div>
+		{/if}
 		<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
 			{$i18n.t('Dashboard')} – Platzhalter. Inhalt folgt.
 		</p>
 	</div>
+
+	<DashboardLinksEditModal
+		bind:show={showLinksModal}
+		links={links}
+		on:save={loadLinks}
+	/>
 </div>

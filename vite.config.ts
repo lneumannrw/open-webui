@@ -21,12 +21,21 @@ export default defineConfig({
 		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build')
 	},
 	build: {
-		sourcemap: true
-	},
-	worker: {
+		sourcemap: true,
+		commonjsOptions: {
+		  include: [/@tiptap/, /node_modules/]
+		}
+	  },
+	  worker: {
 		format: 'es'
-	},
-	esbuild: {
+	  },
+	  esbuild: {
 		pure: process.env.ENV === 'dev' ? [] : ['console.log', 'console.debug', 'console.error']
-	}
-});
+	  },
+	  optimizeDeps: {
+		include: [
+		  '@tiptap/core',
+		  '@tiptap/starter-kit'
+		]
+	  }
+	});

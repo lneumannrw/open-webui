@@ -1,14 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
-import { env } from "$env/dynamic/public";
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 
-// Supabase zwingt uns, eine formal korrekte URL zu übergeben, 
-// sonst crasht der SvelteKit Build-Prozess.
-const supabaseUrl = env.PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co';
-const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY || 'dummy-key';
+// Client mit den festen Build-Variablen erstellen
+export const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
 
-if (!env.PUBLIC_SUPABASE_URL) {
-    console.warn("Supabase Variablen fehlen (oder SvelteKit Build-Phase läuft gerade)");
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Alias für Kompatibilität mit dem restlichen Code (z.B. dashboardLinks)
 export const supabaseApp = supabase;

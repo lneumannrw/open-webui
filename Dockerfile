@@ -40,7 +40,14 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-# Sagt Node.js, dass es maximal 2048 MB (2GB) oder 4096 MB (4GB) RAM nutzen soll
+
+# --- NEU: Supabase Variablen für SvelteKit freischalten ---
+ARG PUBLIC_SUPABASE_URL
+ARG PUBLIC_SUPABASE_ANON_KEY
+ENV PUBLIC_SUPABASE_URL=$PUBLIC_SUPABASE_URL
+ENV PUBLIC_SUPABASE_ANON_KEY=$PUBLIC_SUPABASE_ANON_KEY
+# ----------------------------------------------------------
+
 RUN rm -rf node_modules/.vite && \
     rm -rf .svelte-kit && \
     NODE_OPTIONS="--max_old_space_size=8192" npm run build

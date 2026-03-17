@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { Kunde } from '$lib/types/kunden';
@@ -8,7 +9,6 @@
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import KundenTable from '$lib/components/crm/KundenTable.svelte';
 	import KundeFormModal from '$lib/components/crm/KundeFormModal.svelte';
-	import KundeDetailOverlay from '$lib/components/crm/KundeDetailOverlay.svelte';
 	import KundeCard from '$lib/components/crm/KundeCard.svelte';
 	import ViewSwitcher from '$lib/components/crm/ViewSwitcher.svelte';
 	import CrmSearchFilter from '$lib/components/crm/CrmSearchFilter.svelte';
@@ -21,8 +21,6 @@
 
 	let showKundeModal = false;
 	let selectedKunde: Kunde | null = null;
-	let showDetailOverlay = false;
-	let overlayKunde: Kunde | null = null;
 
 	let searchValue = '';
 	let filterValues: Record<string, string> = {};
@@ -86,8 +84,7 @@
 	}
 
 	function openEdit(kunde: Kunde) {
-		overlayKunde = kunde;
-		showDetailOverlay = true;
+		goto(`/crm/kunden/${kunde.id}`);
 	}
 
 	async function handleSave() {
@@ -112,12 +109,6 @@
 </div>
 
 <KundeFormModal bind:show={showKundeModal} editItem={selectedKunde} on:save={handleSave} />
-<KundeDetailOverlay
-	bind:show={showDetailOverlay}
-	kunde={overlayKunde}
-	kunden={data?.kunden ?? []}
-	on:save={handleSave}
-/>
 
 {#if !data?.kunden}
 	<div class="my-10">

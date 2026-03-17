@@ -1,15 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import { env } from "$env/dynamic/public";
 
-const supabaseUrl = env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY;
+// Supabase zwingt uns, eine formal korrekte URL zu übergeben, 
+// sonst crasht der SvelteKit Build-Prozess.
+const supabaseUrl = env.PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co';
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY || 'dummy-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Supabase Variablen fehlen in den Easypanel Environment Settings!");
+if (!env.PUBLIC_SUPABASE_URL) {
+    console.warn("Supabase Variablen fehlen (oder SvelteKit Build-Phase läuft gerade)");
 }
 
-// Der Client
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
-
-// DIESE ZEILE HINZUFÜGEN, damit der restliche Code nicht meckert:
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const supabaseApp = supabase;

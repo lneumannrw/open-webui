@@ -1,8 +1,11 @@
 import { supabase } from '$lib/supabaseClient';
 import type { Kunde } from '$lib/types/kunden';
 import type { AnsprechpartnerWithKunde } from '$lib/types/ansprechpartner';
+import type { PageLoad } from './$types';
 
-export async function load() {
+export const ssr = false;
+
+export const load: PageLoad = async () => {
 	const [ansprechpartnerRes, kundenRes] = await Promise.all([
 		supabase
 			.from('ansprechpartner')
@@ -38,4 +41,5 @@ export async function load() {
 		ansprechpartner: (ansprechpartnerRes.data ?? []) as AnsprechpartnerWithKunde[],
 		kunden: (kundenRes.data ?? []) as Kunde[]
 	};
-}
+};
+

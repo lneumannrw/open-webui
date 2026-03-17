@@ -1,11 +1,14 @@
 import { supabase } from '$lib/supabaseClient';
 import type { Kunde } from '$lib/types/kunden';
-import type { VertragWithKunde } from '$lib/types/vertraege';
+import type { AnfrageWithKunde } from '$lib/types/anfragen';
+import type { PageLoad } from './$types';
 
-export async function load() {
-	const [vertraegeRes, kundenRes] = await Promise.all([
+export const ssr = false;
+
+export const load: PageLoad = async () => {
+	const [anfragenRes, kundenRes] = await Promise.all([
 		supabase
-			.from('vertraege')
+			.from('anfragen')
 			.select('*, kunden(unternehmensname, kundennummer)')
 			.order('created_at', { ascending: false }),
 		supabase
@@ -14,28 +17,29 @@ export async function load() {
 			.order('kundennummer', { ascending: true })
 	]);
 
-	const vertraegeError = vertraegeRes.error;
+	const anfragenError = anfragenRes.error;
 	const kError = kundenRes.error;
 
-	if (vertraegeError) {
-		console.error('Verträge load error:', vertraegeError);
+	if (anfragenError) {
+		console.error('Anfragen load error:', anfragenError);
 		return {
-			vertraege: [] as VertragWithKunde[],
+			anfragen: [] as AnfrageWithKunde[],
 			kunden: (kundenRes.data ?? []) as Kunde[],
-			error: vertraegeError.message
+			error: anfragenError.message
 		};
 	}
 	if (kError) {
 		console.error('Kunden load error (for dropdown):', kError);
 		return {
-			vertraege: (vertraegeRes.data ?? []) as VertragWithKunde[],
+			anfragen: (anfragenRes.data ?? []) as AnfrageWithKunde[],
 			kunden: [] as Kunde[],
 			error: kError.message
 		};
 	}
 
 	return {
-		vertraege: (vertraegeRes.data ?? []) as VertragWithKunde[],
+		anfragen: (anfragenRes.data ?? []) as AnfrageWithKunde[],
 		kunden: (kundenRes.data ?? []) as Kunde[]
 	};
-}
+};
+

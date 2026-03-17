@@ -1,7 +1,10 @@
 import { supabase } from '$lib/supabaseClient';
 import type { Kunde } from '$lib/types/kunden';
+import type { PageLoad } from './$types';
 
-export async function load() {
+export const ssr = false;
+
+export const load: PageLoad = async () => {
 	const { data, error } = await supabase
 		.from('kunden')
 		.select('*')
@@ -13,4 +16,5 @@ export async function load() {
 	}
 
 	return { kunden: (data ?? []) as Kunde[] };
-}
+};
+

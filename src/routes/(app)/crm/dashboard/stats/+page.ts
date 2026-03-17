@@ -1,6 +1,9 @@
 import { supabase } from '$lib/supabaseClient';
+import type { PageLoad } from './$types';
 
-export async function load() {
+export const ssr = false;
+
+export const load: PageLoad = async () => {
 	const today = new Date();
 	const todayIso = today.toISOString().split('T')[0];
 	const endDate = new Date(today);
@@ -58,4 +61,5 @@ export async function load() {
 		anfragenVerloren,
 		umsatzVorschau
 	};
-}
+};
+

@@ -1,8 +1,11 @@
 import { supabase } from '$lib/supabaseClient';
 import type { Kunde } from '$lib/types/kunden';
 import type { ProjektWithBausteineCount } from '$lib/types/projekte';
+import type { PageLoad } from './$types';
 
-export async function load() {
+export const ssr = false;
+
+export const load: PageLoad = async () => {
 	const [projekteRes, kundenRes] = await Promise.all([
 		supabase
 			.from('projekte')
@@ -38,4 +41,5 @@ export async function load() {
 		projekte: (projekteRes.data ?? []) as ProjektWithBausteineCount[],
 		kunden: (kundenRes.data ?? []) as Kunde[]
 	};
-}
+};
+

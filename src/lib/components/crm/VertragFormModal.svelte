@@ -19,6 +19,8 @@
 	export let show = false;
 	export let editItem: VertragWithKunde | null = null;
 	export let kunden: Kunde[] = [];
+	/** When opening for "new", pre-fill kunde_id (e.g. from customer detail page). */
+	export let defaultKundeId = '';
 
 	let loading = false;
 	let form = {
@@ -42,7 +44,7 @@
 			};
 		} else {
 			form = {
-				kunde_id: '',
+				kunde_id: defaultKundeId || '',
 				vertragsnummer: '',
 				bezeichnung: '',
 				wert: '',

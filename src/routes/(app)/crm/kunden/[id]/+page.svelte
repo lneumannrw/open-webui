@@ -1,15 +1,34 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { onDestroy, onMount, getContext } from 'svelte';
 	import { get } from 'svelte/store';
+	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 	import { showSidebar } from '$lib/stores';
+	import type { AnfrageWithKunde } from '$lib/types/anfragen';
+	import type { ProjektWithBausteineCount } from '$lib/types/projekte';
+	import type { VertragWithKunde } from '$lib/types/vertraege';
+	import type { Rechnung } from '$lib/types/rechnungen';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import KundeFormModal from '$lib/components/crm/KundeFormModal.svelte';
+	import AnfrageCard from '$lib/components/crm/AnfrageCard.svelte';
+	import AnfragenTable from '$lib/components/crm/AnfragenTable.svelte';
+	import AnfrageFormModal from '$lib/components/crm/AnfrageFormModal.svelte';
+	import ProjektCard from '$lib/components/crm/ProjektCard.svelte';
+	import ProjekteTable from '$lib/components/crm/ProjekteTable.svelte';
+	import ProjektFormModal from '$lib/components/crm/ProjektFormModal.svelte';
+	import VertragCard from '$lib/components/crm/VertragCard.svelte';
+	import VertraegeTable from '$lib/components/crm/VertraegeTable.svelte';
+	import VertragFormModal from '$lib/components/crm/VertragFormModal.svelte';
+	import RechnungCard from '$lib/components/crm/RechnungCard.svelte';
+	import RechnungenTable from '$lib/components/crm/RechnungenTable.svelte';
 	import PencilSquare from '$lib/components/icons/PencilSquare.svelte';
 	import ChatBubble from '$lib/components/icons/ChatBubble.svelte';
 	import Headphone from '$lib/components/icons/Headphone.svelte';
 	import Calendar from '$lib/components/icons/Calendar.svelte';
+	import Plus from '$lib/components/icons/Plus.svelte';
+	import Squares2x2 from '$lib/components/icons/Squares2x2.svelte';
+	import ListBullet from '$lib/components/icons/ListBullet.svelte';
 
 	export let data: PageData;
 
@@ -21,6 +40,58 @@
 
 	let prevSidebarValue: boolean | null = null;
 	let showKundeModal = false;
+
+	let viewModeAnfragen: 'grid' | 'list' = 'grid';
+	let viewModeProjekte: 'grid' | 'list' = 'grid';
+	let viewModeVertraege: 'grid' | 'list' = 'grid';
+	let viewModeRechnungen: 'grid' | 'list' = 'grid';
+
+	let showAnfrageModal = false;
+	let showProjektModal = false;
+	let showVertragModal = false;
+	let selectedAnfrage: AnfrageWithKunde | null = null;
+	let selectedProjekt: ProjektWithBausteineCount | null = null;
+	let selectedVertrag: VertragWithKunde | null = null;
+
+	function openNewAnfrage() {
+		selectedAnfrage = null;
+		showAnfrageModal = true;
+	}
+	function openEditAnfrage(a: AnfrageWithKunde) {
+		selectedAnfrage = a;
+		showAnfrageModal = true;
+	}
+	async function handleSaveAnfrage() {
+		await invalidateAll();
+	}
+
+	function openNewProjekt() {
+		selectedProjekt = null;
+		showProjektModal = true;
+	}
+	function openEditProjekt(p: ProjektWithBausteineCount) {
+		selectedProjekt = p;
+		showProjektModal = true;
+	}
+	async function handleSaveProjekt() {
+		await invalidateAll();
+	}
+
+	function openNewVertrag() {
+		selectedVertrag = null;
+		showVertragModal = true;
+	}
+	function openEditVertrag(v: VertragWithKunde) {
+		selectedVertrag = v;
+		showVertragModal = true;
+	}
+	async function handleSaveVertrag() {
+		await invalidateAll();
+	}
+
+	function onRechnungAdd() {
+		toast.info(i18n.t('Rechnung anlegen – Formular folgt.'));
+	}
 
 	onMount(() => {
 		prevSidebarValue = get(showSidebar);
@@ -161,6 +232,8 @@
 
 	$: kunde = data?.kunde;
 	$: projekte = data?.projekte ?? [];
+	$: anfragen = data?.anfragen ?? [];
+	$: rechnungen = (data?.rechnungen ?? []) as Rechnung[];
 	$: termine = (data?.termine ?? []).slice().sort((a: any, b: any) => {
 		const da = new Date(primaryTerminDate(a) ?? 0).getTime();
 		const db = new Date(primaryTerminDate(b) ?? 0).getTime();
@@ -196,6 +269,27 @@
 {:else}
 	<div class="min-h-[calc(100dvh-56px)] pb-10">
 		<KundeFormModal bind:show={showKundeModal} editItem={kunde ?? null} on:save={() => goto(`/crm/kunden/${kunde?.id ?? ''}`, { replaceState: true })} />
+		<AnfrageFormModal
+			bind:show={showAnfrageModal}
+			editItem={selectedAnfrage}
+			kunden={kunde ? [kunde] : []}
+			defaultKundenId={kunde?.id ?? ''}
+			on:save={handleSaveAnfrage}
+		/>
+		<ProjektFormModal
+			bind:show={showProjektModal}
+			editItem={selectedProjekt}
+			kunden={kunde ? [kunde] : []}
+			defaultKundenId={kunde?.id ?? ''}
+			on:save={handleSaveProjekt}
+		/>
+		<VertragFormModal
+			bind:show={showVertragModal}
+			editItem={selectedVertrag}
+			kunden={kunde ? [kunde] : []}
+			defaultKundeId={kunde?.id ?? ''}
+			on:save={handleSaveVertrag}
+		/>
 
 		<div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
 			<div class="rounded-[28px] bg-white dark:bg-gray-900 border border-gray-100/70 dark:border-gray-850/70 p-4 shadow-[0_1px_0_rgba(255,255,255,0.7),0_10px_30px_rgba(15,23,42,0.04)]">
@@ -390,6 +484,236 @@
 											{/if}
 										</div>
 									{/each}
+								</div>
+							{/if}
+						</div>
+					</section>
+				</div>
+
+				<div class="flex flex-col gap-6">
+					<!-- Anfragen -->
+					<section class="rounded-[32px] bg-white dark:bg-gray-900 border border-gray-100/70 dark:border-gray-850/70 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.05)]">
+						<div class="px-5 py-4 flex items-center justify-between">
+							<h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{i18n.t('Anfragen')}</h2>
+							<div class="flex items-center gap-2">
+								<div class="flex items-center gap-0.5 rounded-xl bg-gray-50 dark:bg-gray-850 p-0.5">
+									<button
+										class="p-1.5 rounded-lg transition {viewModeAnfragen === 'grid'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('Gallery view')}
+										on:click={() => (viewModeAnfragen = 'grid')}
+									>
+										<Squares2x2 className="size-4" strokeWidth="2" />
+									</button>
+									<button
+										class="p-1.5 rounded-lg transition {viewModeAnfragen === 'list'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('List view')}
+										on:click={() => (viewModeAnfragen = 'list')}
+									>
+										<ListBullet className="size-4" strokeWidth="2" />
+									</button>
+								</div>
+								<button
+									type="button"
+									class="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+									on:click={openNewAnfrage}
+									aria-label={i18n.t('Neue Anfrage')}
+								>
+									<Plus className="size-4" strokeWidth="2.5" />
+								</button>
+							</div>
+						</div>
+						<div class="px-5 pb-5">
+							{#if viewModeAnfragen === 'grid'}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30">
+									<div class="my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
+										{#each anfragen as a (a.id)}
+											<AnfrageCard anfrage={a} onSelect={openEditAnfrage} />
+										{/each}
+									</div>
+									{#if anfragen.length === 0}
+										<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
+											{i18n.t('Keine Anfragen vorhanden.')}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3">
+									<AnfragenTable anfragen={anfragen} onRowClick={openEditAnfrage} />
+								</div>
+							{/if}
+						</div>
+					</section>
+
+					<!-- Projekte -->
+					<section class="rounded-[32px] bg-white dark:bg-gray-900 border border-gray-100/70 dark:border-gray-850/70 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.05)]">
+						<div class="px-5 py-4 flex items-center justify-between">
+							<h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{i18n.t('Projekte')}</h2>
+							<div class="flex items-center gap-2">
+								<div class="flex items-center gap-0.5 rounded-xl bg-gray-50 dark:bg-gray-850 p-0.5">
+									<button
+										class="p-1.5 rounded-lg transition {viewModeProjekte === 'grid'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('Gallery view')}
+										on:click={() => (viewModeProjekte = 'grid')}
+									>
+										<Squares2x2 className="size-4" strokeWidth="2" />
+									</button>
+									<button
+										class="p-1.5 rounded-lg transition {viewModeProjekte === 'list'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('List view')}
+										on:click={() => (viewModeProjekte = 'list')}
+									>
+										<ListBullet className="size-4" strokeWidth="2" />
+									</button>
+								</div>
+								<button
+									type="button"
+									class="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+									on:click={openNewProjekt}
+									aria-label={i18n.t('Neues Projekt')}
+								>
+									<Plus className="size-4" strokeWidth="2.5" />
+								</button>
+							</div>
+						</div>
+						<div class="px-5 pb-5">
+							{#if viewModeProjekte === 'grid'}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30">
+									<div class="my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
+										{#each projekte as projekt (projekt.id)}
+											<ProjektCard projekt={projekt} kunden={kunde ? [kunde] : []} onSelect={openEditProjekt} />
+										{/each}
+									</div>
+									{#if projekte.length === 0}
+										<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
+											{i18n.t('Keine Projekte vorhanden.')}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3">
+									<ProjekteTable projekte={projekte} kunden={kunde ? [kunde] : []} onRowClick={openEditProjekt} />
+								</div>
+							{/if}
+						</div>
+					</section>
+
+					<!-- Verträge -->
+					<section class="rounded-[32px] bg-white dark:bg-gray-900 border border-gray-100/70 dark:border-gray-850/70 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.05)]">
+						<div class="px-5 py-4 flex items-center justify-between">
+							<h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{i18n.t('Verträge')}</h2>
+							<div class="flex items-center gap-2">
+								<div class="flex items-center gap-0.5 rounded-xl bg-gray-50 dark:bg-gray-850 p-0.5">
+									<button
+										class="p-1.5 rounded-lg transition {viewModeVertraege === 'grid'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('Gallery view')}
+										on:click={() => (viewModeVertraege = 'grid')}
+									>
+										<Squares2x2 className="size-4" strokeWidth="2" />
+									</button>
+									<button
+										class="p-1.5 rounded-lg transition {viewModeVertraege === 'list'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('List view')}
+										on:click={() => (viewModeVertraege = 'list')}
+									>
+										<ListBullet className="size-4" strokeWidth="2" />
+									</button>
+								</div>
+								<button
+									type="button"
+									class="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+									on:click={openNewVertrag}
+									aria-label={i18n.t('Neuer Vertrag')}
+								>
+									<Plus className="size-4" strokeWidth="2.5" />
+								</button>
+							</div>
+						</div>
+						<div class="px-5 pb-5">
+							{#if viewModeVertraege === 'grid'}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30">
+									<div class="my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
+										{#each data?.vertraege ?? [] as v (v.id)}
+											<VertragCard vertrag={v} onSelect={openEditVertrag} />
+										{/each}
+									</div>
+									{#if (data?.vertraege?.length ?? 0) === 0}
+										<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
+											{i18n.t('Keine Verträge vorhanden.')}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3">
+									<VertraegeTable vertraege={data?.vertraege ?? []} onRowClick={openEditVertrag} />
+								</div>
+							{/if}
+						</div>
+					</section>
+
+					<!-- Rechnungen -->
+					<section class="rounded-[32px] bg-white dark:bg-gray-900 border border-gray-100/70 dark:border-gray-850/70 overflow-hidden shadow-[0_20px_60px_rgba(15,23,42,0.05)]">
+						<div class="px-5 py-4 flex items-center justify-between">
+							<h2 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{i18n.t('Rechnungen')}</h2>
+							<div class="flex items-center gap-2">
+								<div class="flex items-center gap-0.5 rounded-xl bg-gray-50 dark:bg-gray-850 p-0.5">
+									<button
+										class="p-1.5 rounded-lg transition {viewModeRechnungen === 'grid'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('Gallery view')}
+										on:click={() => (viewModeRechnungen = 'grid')}
+									>
+										<Squares2x2 className="size-4" strokeWidth="2" />
+									</button>
+									<button
+										class="p-1.5 rounded-lg transition {viewModeRechnungen === 'list'
+											? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+											: 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}"
+										aria-label={i18n.t('List view')}
+										on:click={() => (viewModeRechnungen = 'list')}
+									>
+										<ListBullet className="size-4" strokeWidth="2" />
+									</button>
+								</div>
+								<button
+									type="button"
+									class="inline-flex items-center justify-center size-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+									on:click={onRechnungAdd}
+									aria-label={i18n.t('Neue Rechnung')}
+								>
+									<Plus className="size-4" strokeWidth="2.5" />
+								</button>
+							</div>
+						</div>
+						<div class="px-5 pb-5">
+							{#if viewModeRechnungen === 'grid'}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30">
+									<div class="my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
+										{#each rechnungen as r (r.id)}
+											<RechnungCard rechnung={r} />
+										{/each}
+									</div>
+									{#if rechnungen.length === 0}
+										<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
+											{i18n.t('Keine Rechnungen vorhanden.')}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<div class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3">
+									<RechnungenTable rechnungen={rechnungen} />
 								</div>
 							{/if}
 						</div>

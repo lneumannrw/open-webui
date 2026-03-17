@@ -2,6 +2,7 @@ import { supabase } from '$lib/supabaseClient';
 import type { AnsprechpartnerWithKunde } from '$lib/types/ansprechpartner';
 import type { Kunde } from '$lib/types/kunden';
 import type { Projekt } from '$lib/types/projekte';
+import type { Rechnung } from '$lib/types/rechnungen';
 import type { PageLoad } from './$types';
 
 export const ssr = false;
@@ -90,9 +91,35 @@ async function loadTermineForKunde(kundenId: string) {
 async function loadVertraegeForKunde(kundenId: string) {
 	return supabase
 		.from('vertraege')
-		.select('*')
+		.select('*, kunden(unternehmensname, kundennummer)')
 		.eq('kunde_id', kundenId)
 		.order('updated_at', { ascending: false });
+}
+
+async function loadAnfragenForKunde(kundenId: string) {
+	return supabase
+		.from('anfragen')
+		.select('*, kunden(unternehmensname, kundennummer)')
+		.eq('kunden_id', kundenId)
+		.order('created_at', { ascending: false });
+}
+
+async function loadRechnungenForKunde(kundenId: string): Promise<{ data: Rechnung[]; error: unknown }> {
+	try {
+		const res = await supabase
+			.from('rechnungen')
+			.select('*')
+			.eq('kunden_id', kundenId)
+			.order('created_at', { ascending: false });
+		if (res.error) {
+			console.warn('Rechnungen load (kunde):', res.error);
+			return { data: [], error: res.error };
+		}
+		return { data: (res.data ?? []) as Rechnung[], error: null };
+	} catch (e) {
+		console.warn('Rechnungen load (kunde):', e);
+		return { data: [], error: e };
+	}
 }
 
 function toActivityItems(args: {
@@ -179,27 +206,38 @@ function sumByStatus(projekte: Projekt[]) {
 		.sort((a, b) => b.value - a.value);
 }
 
+type AnfrageWithKunde = { kunden: { unternehmensname: string; kundennummer: number } | null; [key: string]: unknown };
+type VertragWithKunde = Vertrag & { kunden: { unternehmensname: string; kundennummer: number } | null };
+
 export const load: PageLoad = async ({ params }) => {
 	const id = params.id;
 
-	const [kundeRes, apRes, projekteRes, termineRes, vertraegeRes] = await Promise.all([
+	const [kundeRes, apRes, projekteRes, termineRes, vertraegeRes, anfragenRes] = await Promise.all([
 		supabase.from('kunden').select('*').eq('id', id).single(),
 		supabase
 			.from('ansprechpartner')
 			.select('*, kunden(unternehmensname, kundennummer)')
 			.eq('kunden_id', id)
 			.order('nachname', { ascending: true }),
-		supabase.from('projekte').select('*').eq('kunden_id', id).order('created_at', { ascending: false }),
+		supabase
+			.from('projekte')
+			.select('*, projekt_bausteine(id)')
+			.eq('kunden_id', id)
+			.order('created_at', { ascending: false }),
 		loadTermineForKunde(id),
-		loadVertraegeForKunde(id)
+		loadVertraegeForKunde(id),
+		loadAnfragenForKunde(id)
 	]);
+
+	const rechnungenRes = await loadRechnungenForKunde(id);
 
 	const error =
 		kundeRes.error?.message ||
 		apRes.error?.message ||
 		projekteRes.error?.message ||
 		(termineRes as any)?.error?.message ||
-		(vertraegeRes as any)?.error?.message;
+		(vertraegeRes as any)?.error?.message ||
+		anfragenRes.error?.message;
 
 	if (error) {
 		console.error('Kunde dashboard load error:', {
@@ -207,14 +245,17 @@ export const load: PageLoad = async ({ params }) => {
 			ansprechpartner: apRes.error,
 			projekte: projekteRes.error,
 			termine: (termineRes as any)?.error,
-			vertraege: (vertraegeRes as any)?.error
+			vertraege: (vertraegeRes as any)?.error,
+			anfragen: anfragenRes.error
 		});
 	}
 
 	const projekte = (projekteRes.data ?? []) as Projekt[];
 	const ansprechpartner = (apRes.data ?? []) as AnsprechpartnerWithKunde[];
 	const termine = (((termineRes as any)?.data ?? []) as Termin[]) ?? [];
-	const vertraege = (((vertraegeRes as any)?.data ?? []) as Vertrag[]) ?? [];
+	const vertraege = (((vertraegeRes as any)?.data ?? []) as VertragWithKunde[]) ?? [];
+	const anfragen = (anfragenRes.data ?? []) as AnfrageWithKunde[];
+	const rechnungen = rechnungenRes.data ?? [];
 
 	return {
 		kunde: (kundeRes.data ?? null) as Kunde | null,
@@ -222,6 +263,8 @@ export const load: PageLoad = async ({ params }) => {
 		projekte,
 		termine,
 		vertraege,
+		anfragen,
+		rechnungen,
 		activities: toActivityItems({ projekte, ansprechpartner, termine, vertraege }),
 		funnel: sumByStatus(projekte),
 		error: error ?? null

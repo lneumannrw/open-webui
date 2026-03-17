@@ -21,6 +21,8 @@
 	export let show = false;
 	export let editItem: ProjektWithBausteineCount | null = null;
 	export let kunden: Kunde[] = [];
+	/** When opening for "new", pre-fill kunden_id (e.g. from customer detail page). */
+	export let defaultKundenId = '';
 
 	let loading = false;
 	let form = {
@@ -39,7 +41,7 @@
 			};
 			bausteine = [];
 		} else {
-			form = { name: '', beschreibung: '', kunden_id: '' };
+			form = { name: '', beschreibung: '', kunden_id: defaultKundenId || '' };
 			bausteine = [];
 		}
 	}

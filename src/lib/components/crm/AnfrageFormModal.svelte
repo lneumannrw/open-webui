@@ -19,6 +19,8 @@
 	export let show = false;
 	export let editItem: AnfrageWithKunde | null = null;
 	export let kunden: Kunde[] = [];
+	/** When opening for "new", pre-fill kunden_id (e.g. from customer detail page). */
+	export let defaultKundenId = '';
 
 	let loading = false;
 	let form = {
@@ -48,7 +50,7 @@
 			};
 		} else {
 			form = {
-				kunden_id: '',
+				kunden_id: defaultKundenId || '',
 				titel: '',
 				beschreibung: '',
 				status: 'Neu',

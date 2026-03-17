@@ -158,5 +158,15 @@
 	"engines": {
 		"node": ">=18.13.0 <=22.x.x",
 		"npm": ">=6.0.0"
-	}
+	},
+	"overrides": {
+    "@tiptap/core": "^3.0.7",
+    "@tiptap/pm": "^3.0.7",
+    "@tiptap/extension-bubble-menu": "^3.0.7",
+    "@tiptap/extension-drag-handle": "^3.0.7",
+    "@tiptap/extension-floating-menu": "^3.0.7",
+    "@tiptap/extension-highlight": "^3.0.7",
+    "@tiptap/extension-mention": "^3.0.7",
+    "@tiptap/suggestion": "^3.0.7"
+  }
 }

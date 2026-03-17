@@ -35,6 +35,7 @@ export default defineConfig({
 	  optimizeDeps: {
 		include: [
 		  '@tiptap/core',
+		  '@tiptap/pm', // Das ist der Prosemirror-Kern, der oft zickt
 		  '@tiptap/starter-kit'
 		]
 	  }

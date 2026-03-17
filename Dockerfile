@@ -40,7 +40,8 @@ RUN npm ci --force
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-RUN npm run build
+# Sagt Node.js, dass es maximal 2048 MB (2GB) oder 4096 MB (4GB) RAM nutzen soll
+RUN NODE_OPTIONS="--max_old_space_size=8192" npm run build
 
 ######## WebUI backend ########
 FROM python:3.11.14-slim-bookworm AS base

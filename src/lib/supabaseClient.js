@@ -1,12 +1,14 @@
-
 import { createClient } from "@supabase/supabase-js";
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public"
+// WICHTIG: Wir nutzen jetzt 'dynamic' statt 'static'
+import { env } from "$env/dynamic/public";
 
-const supabaseUrl = PUBLIC_SUPABASE_URL;
-const supabaseKey = PUBLIC_SUPABASE_ANON_KEY;
+// Variablen dynamisch zur Laufzeit abrufen
+const supabaseUrl = env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Warnung ausgeben, falls die Variablen in Easypanel vergessen wurden
+if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn("Supabase Variablen fehlen in den Easypanel Environment Settings!");
+}
 
-/** Client scoped to `app` schema for app.dashboard_links etc. */
-export const supabaseApp = supabase.schema('app');
-        
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');

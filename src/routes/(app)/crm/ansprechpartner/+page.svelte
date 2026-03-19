@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { AnsprechpartnerWithKunde } from '$lib/types/ansprechpartner';
@@ -18,7 +18,6 @@
 	export let data: PageData;
 
 	let showModal = false;
-	let selectedItem: AnsprechpartnerWithKunde | null = null;
 
 	let searchValue = '';
 	let filterValues: Record<string, string> = {};
@@ -67,13 +66,11 @@
 	}
 
 	function openNew() {
-		selectedItem = null;
 		showModal = true;
 	}
 
-	function openEdit(ap: AnsprechpartnerWithKunde) {
-		selectedItem = ap;
-		showModal = true;
+	function openDetail(ap: AnsprechpartnerWithKunde) {
+		goto(`/crm/ansprechpartner/${ap.id}`);
 	}
 
 	async function handleSave() {
@@ -101,7 +98,7 @@
 
 <AnsprechpartnerFormModal
 	bind:show={showModal}
-	editItem={selectedItem}
+	editItem={null}
 	kunden={data?.kunden ?? []}
 	on:save={handleSave}
 />
@@ -129,7 +126,12 @@
 				>
 					<div class="my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
 						{#each displayItems as ap (ap.id)}
-							<AnsprechpartnerCard ansprechpartner={ap} onSelect={openEdit} />
+							<button
+								class="w-full text-left"
+								on:click={() => openDetail(ap)}
+							>
+								<AnsprechpartnerCard ansprechpartner={ap} />
+							</button>
 						{/each}
 					</div>
 					{#if hasSearchOrFilter && displayItems.length === 0}
@@ -146,7 +148,7 @@
 				<div
 					class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3"
 				>
-					<AnsprechpartnerTable ansprechpartner={displayItems} onRowClick={openEdit} />
+					<AnsprechpartnerTable ansprechpartner={displayItems} onRowClick={openDetail} />
 					{#if hasSearchOrFilter && displayItems.length === 0}
 						<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
 							{i18n.t('Keine Ergebnisse gefunden.')}

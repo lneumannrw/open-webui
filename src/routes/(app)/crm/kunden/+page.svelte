@@ -10,6 +10,7 @@
 	import KundenTable from '$lib/components/crm/KundenTable.svelte';
 	import KundeFormModal from '$lib/components/crm/KundeFormModal.svelte';
 	import KundeCard from '$lib/components/crm/KundeCard.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ViewSwitcher from '$lib/components/crm/ViewSwitcher.svelte';
 	import CrmSearchFilter from '$lib/components/crm/CrmSearchFilter.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
@@ -21,6 +22,9 @@
 
 	let showKundeModal = false;
 	let selectedKunde: Kunde | null = null;
+	let showDeleteConfirm = false;
+	let kundeToDelete: Kunde | null = null;
+	let deleteLoading = false;
 
 	let searchValue = '';
 	let filterValues: Record<string, string> = {};
@@ -87,6 +91,28 @@
 		goto(`/crm/kunden/${kunde.id}`);
 	}
 
+	function openDelete(kunde: Kunde) {
+		kundeToDelete = kunde;
+		showDeleteConfirm = true;
+	}
+
+	async function handleDelete() {
+		if (!kundeToDelete?.id) return;
+		deleteLoading = true;
+		const { error } = await supabase
+			.from('kunden')
+			.delete()
+			.eq('id', kundeToDelete.id);
+		deleteLoading = false;
+		if (error) {
+			toast.error(error.message || i18n.t('Fehler beim Löschen.'));
+			return;
+		}
+		toast.success(i18n.t('Kunde wurde gelöscht.'));
+		kundeToDelete = null;
+		await invalidateAll();
+	}
+
 	async function handleSave() {
 		await invalidateAll();
 	}
@@ -107,6 +133,14 @@
 		</button>
 	</div>
 </div>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Kunde löschen?')}
+	message={i18n.t('Diese Aktion löscht auch alle zugehörigen Datensätze (Anfragen, Projekte, Verträge, Ansprechpartner). Dies kann nicht rückgängig gemacht werden.')}
+	onConfirm={handleDelete}
+	confirmLabel={deleteLoading ? i18n.t('Wird gelöscht...') : i18n.t('Löschen')}
+/>
 
 <KundeFormModal bind:show={showKundeModal} editItem={selectedKunde} on:save={handleSave} />
 
@@ -150,7 +184,7 @@
 				<div
 					class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3"
 				>
-					<KundenTable kunden={displayItems} onRowClick={openEdit} />
+					<KundenTable kunden={displayItems} onRowClick={openEdit} onDelete={openDelete} />
 					{#if hasSearchOrFilter && displayItems.length === 0}
 						<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
 							{i18n.t('Keine Ergebnisse gefunden.')}

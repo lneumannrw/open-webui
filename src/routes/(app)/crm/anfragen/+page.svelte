@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { AnfrageWithKunde } from '$lib/types/anfragen';
@@ -11,7 +11,9 @@
 	import AnfrageFormModal from '$lib/components/crm/AnfrageFormModal.svelte';
 	import ViewSwitcher from '$lib/components/crm/ViewSwitcher.svelte';
 	import CrmSearchFilter from '$lib/components/crm/CrmSearchFilter.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
 	import { crmViewMode } from '$lib/stores';
 	import { supabase } from '$lib/supabaseClient';
 	import { fetchCrmList } from '$lib/utils/crmSearch';
@@ -20,6 +22,9 @@
 
 	let showModal = false;
 	let selectedItem: AnfrageWithKunde | null = null;
+	let showDeleteConfirm = false;
+	let anfragenToDelete: AnfrageWithKunde | null = null;
+	let deleteLoading = false;
 
 	let searchValue = '';
 	let filterValues: Record<string, string> = {};
@@ -83,9 +88,37 @@
 		showModal = true;
 	}
 
-	function openEdit(a: AnfrageWithKunde) {
-		selectedItem = a;
-		showModal = true;
+	function openDetail(a: AnfrageWithKunde) {
+		goto('/crm/anfragen/' + a.id);
+	}
+
+	function openDelete(a: AnfrageWithKunde) {
+		anfragenToDelete = a;
+		showDeleteConfirm = true;
+	}
+
+	async function handleDelete() {
+		if (!anfragenToDelete?.id) return;
+
+		deleteLoading = true;
+		try {
+			const { error } = await supabase
+				.from('anfragen')
+				.delete()
+				.eq('id', anfragenToDelete.id);
+
+			if (error) throw error;
+
+			toast.success(i18n.t('Anfrage erfolgreich gelöscht.'));
+			showDeleteConfirm = false;
+			anfragenToDelete = null;
+			await invalidateAll();
+		} catch (e) {
+			console.error('Delete anfrage error:', e);
+			toast.error(i18n.t('Anfrage konnte nicht gelöscht werden.'));
+		} finally {
+			deleteLoading = false;
+		}
 	}
 
 	async function handleSave() {
@@ -110,6 +143,15 @@
 		</button>
 	</div>
 </div>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Anfrage löschen?')}
+	message={i18n.t('Diese Anfrage wird dauerhaft gelöscht und kann nicht wiederhergestellt werden.')}
+	confirmLabel={i18n.t('Löschen')}
+	cancelLabel={i18n.t('Abbrechen')}
+	onConfirm={handleDelete}
+/>
 
 <AnfrageFormModal
 	bind:show={showModal}
@@ -141,7 +183,7 @@
 				>
 					<div class="my-2 px-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2160px]:grid-cols-4 gap-2">
 						{#each displayItems as a (a.id)}
-							<AnfrageCard anfrage={a} onSelect={openEdit} />
+							<AnfrageCard anfrage={a} onSelect={openDetail} />
 						{/each}
 					</div>
 					{#if hasSearchOrFilter && displayItems.length === 0}
@@ -158,7 +200,7 @@
 				<div
 					class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3"
 				>
-					<AnfragenTable anfragen={displayItems} onRowClick={openEdit} />
+					<AnfragenTable anfragen={displayItems} onRowClick={openDetail} onDelete={openDelete} />
 					{#if hasSearchOrFilter && displayItems.length === 0}
 						<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
 							{i18n.t('Keine Ergebnisse gefunden.')}

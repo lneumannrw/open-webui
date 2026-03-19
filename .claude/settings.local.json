@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(find \"C:/Users/lukas/open-webui/src/routes/\\(app\\)/crm\" -name \"*.svelte\" -o -name \"*.ts\")",
+      "Bash(find /c/Users/lukas/open-webui/src/lib/components -name *Dialog* -o -name *Trash* -o -name *Garbage*)",
+      "Bash(npm run:*)",
+      "Bash(grep:*)",
+      "Bash(head -20 \"src/routes/\\(app\\)/crm/anfragen/+page.svelte\")",
+      "Bash(find /c/Users/lukas/open-webui/src/lib/components/icons -name *.svelte -type f)",
+      "Bash(find:*)",
+      "Bash(npx svelte-check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite:*)",
+      "Bash(git log:*)",
+      "Bash(cat -A \"C:\\\\Users\\\\lukas\\\\open-webui\\\\src\\\\routes\\\\\\(app\\)\\\\crm\\\\+layout.svelte\")"
+    ]
+  },
+  "outputStyle": "Learning",
+  "enabledPlugins": {
+    "notion-workspace-plugin@notion-plugin-marketplace": true
+  }
+}

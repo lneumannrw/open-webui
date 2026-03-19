@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte';
 	import type { Kunde } from '$lib/types/kunden';
 	import type { ProjektWithBausteineCount } from '$lib/types/projekte';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
 
 	const i18nRaw = getContext('i18n');
 	const i18n =
@@ -12,6 +13,7 @@
 	export let projekte: ProjektWithBausteineCount[] = [];
 	export let kunden: Kunde[] = [];
 	export let onRowClick: ((p: ProjektWithBausteineCount) => void) | undefined = undefined;
+	export let onDelete: ((p: ProjektWithBausteineCount) => void) | undefined = undefined;
 
 	function getKundeName(kundeId: string | null): string {
 		if (!kundeId) return '–';
@@ -43,6 +45,11 @@
 				<th scope="col" class="px-2.5 py-2">
 					{i18n.t('Beschreibung')}
 				</th>
+				{#if onDelete}
+					<th scope="col" class="px-2.5 py-2 w-10">
+						<span class="sr-only">{i18n.t('Aktionen')}</span>
+					</th>
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -75,6 +82,17 @@
 					<td class="px-3 py-1 text-gray-600 dark:text-gray-400 max-w-64 truncate">
 						{projekt.beschreibung ?? '–'}
 					</td>
+					{#if onDelete}
+						<td class="px-3 py-1 text-right">
+							<button
+								class="p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 transition"
+								on:click|stopPropagation={() => onDelete(projekt)}
+								aria-label={i18n.t('Löschen')}
+							>
+								<GarbageBin className="size-4" />
+							</button>
+						</td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>

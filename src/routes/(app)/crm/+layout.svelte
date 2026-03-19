@@ -9,7 +9,6 @@
 	import UsersSolid from '$lib/components/icons/UsersSolid.svelte';
 	import QueueList from '$lib/components/icons/QueueList.svelte';
 	import User from '$lib/components/icons/User.svelte';
-	import Folder from '$lib/components/icons/Folder.svelte';
 	import Document from '$lib/components/icons/Document.svelte';
 	import ChartBar from '$lib/components/icons/ChartBar.svelte';
 
@@ -238,17 +237,6 @@
 							>
 								<User className="size-4 shrink-0" />
 								{i18n.t('Ansprechpartner')}
-							</a>
-							<a
-								draggable="false"
-								aria-current={$page.url.pathname.includes('/crm/projekte') ? 'page' : null}
-								class="min-w-fit p-1.5 flex items-center gap-1.5 {$page.url.pathname.includes('/crm/projekte')
-									? ''
-									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition select-none"
-								href="/crm/projekte"
-							>
-								<Folder className="size-4 shrink-0" />
-								{i18n.t('Projekte')}
 							</a>
 							<a
 								draggable="false"

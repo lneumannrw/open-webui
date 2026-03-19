@@ -5,6 +5,7 @@
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 	import { showSidebar } from '$lib/stores';
+	import { supabase } from '$lib/supabaseClient';
 	import type { AnfrageWithKunde } from '$lib/types/anfragen';
 	import type { ProjektWithBausteineCount } from '$lib/types/projekte';
 	import type { VertragWithKunde } from '$lib/types/vertraege';
@@ -22,6 +23,7 @@
 	import VertragFormModal from '$lib/components/crm/VertragFormModal.svelte';
 	import RechnungCard from '$lib/components/crm/RechnungCard.svelte';
 	import RechnungenTable from '$lib/components/crm/RechnungenTable.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import PencilSquare from '$lib/components/icons/PencilSquare.svelte';
 	import ChatBubble from '$lib/components/icons/ChatBubble.svelte';
 	import Headphone from '$lib/components/icons/Headphone.svelte';
@@ -29,6 +31,8 @@
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import Squares2x2 from '$lib/components/icons/Squares2x2.svelte';
 	import ListBullet from '$lib/components/icons/ListBullet.svelte';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
+	import ChevronLeft from '$lib/components/icons/ChevronLeft.svelte';
 
 	export let data: PageData;
 
@@ -40,6 +44,8 @@
 
 	let prevSidebarValue: boolean | null = null;
 	let showKundeModal = false;
+	let showDeleteConfirm = false;
+	let deleteLoading = false;
 
 	let viewModeAnfragen: 'grid' | 'list' = 'grid';
 	let viewModeProjekte: 'grid' | 'list' = 'grid';
@@ -101,6 +107,22 @@
 	onDestroy(() => {
 		if (prevSidebarValue != null) showSidebar.set(prevSidebarValue);
 	});
+
+	async function handleDelete() {
+		if (!data?.kunde?.id) return;
+		deleteLoading = true;
+		const { error } = await supabase
+			.from('kunden')
+			.delete()
+			.eq('id', data.kunde.id);
+		deleteLoading = false;
+		if (error) {
+			toast.error(error.message || i18n.t('Fehler beim Löschen.'));
+			return;
+		}
+		toast.success(i18n.t('Kunde wurde gelöscht.'));
+		goto('/crm/kunden');
+	}
 
 	function formatDateTime(iso?: string | null) {
 		if (!iso) return '–';
@@ -267,7 +289,44 @@
 		</div>
 	</div>
 {:else}
+	<ConfirmDialog
+		bind:show={showDeleteConfirm}
+		title={i18n.t('Kunde löschen?')}
+		message={i18n.t('Diese Aktion löscht auch alle zugehörigen Datensätze (Anfragen, Projekte, Verträge, Ansprechpartner). Dies kann nicht rückgängig gemacht werden.')}
+		onConfirm={handleDelete}
+		confirmLabel={deleteLoading ? i18n.t('Wird gelöscht...') : i18n.t('Löschen')}
+	/>
+
 	<div class="min-h-[calc(100dvh-56px)] pb-10">
+		<!-- Header mit Back, Edit, und Delete Button -->
+		<div class="flex items-start justify-between gap-4 mb-6">
+			<button
+				class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+				on:click={() => goto('/crm/kunden')}
+				aria-label={i18n.t('Zurück')}
+			>
+				<ChevronLeft className="size-5 text-gray-600 dark:text-gray-400" />
+			</button>
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					class="inline-flex items-center justify-center rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 size-8 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition"
+					on:click={() => (showKundeModal = true)}
+					aria-label={i18n.t('Bearbeiten')}
+				>
+					<PencilSquare className="size-4" />
+				</button>
+				<button
+					type="button"
+					class="inline-flex items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400 size-8 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition"
+					on:click={() => (showDeleteConfirm = true)}
+					aria-label={i18n.t('Löschen')}
+				>
+					<GarbageBin className="size-4" />
+				</button>
+			</div>
+		</div>
+
 		<KundeFormModal bind:show={showKundeModal} editItem={kunde ?? null} on:save={() => goto(`/crm/kunden/${kunde?.id ?? ''}`, { replaceState: true })} />
 		<AnfrageFormModal
 			bind:show={showAnfrageModal}

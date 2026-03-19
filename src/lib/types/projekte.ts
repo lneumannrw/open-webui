@@ -40,3 +40,8 @@ export interface ProjektWithBausteineCount extends Projekt {
 export interface ProjektWithKunde extends Projekt {
 	kunden?: { unternehmensname: string; kundennummer: number } | null;
 }
+
+/** Baustein mit eingebettetem Projekt-Namen für Übersichtsseite */
+export interface ProjektBausteinWithProjekt extends ProjektBaustein {
+	projekte?: { id: string; name: string } | null;
+}

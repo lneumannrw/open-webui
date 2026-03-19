@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { VertragWithKunde } from '$lib/types/vertraege';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
 
 	const i18nRaw = getContext('i18n');
 	const i18n =
@@ -10,6 +11,7 @@
 
 	export let vertraege: VertragWithKunde[] = [];
 	export let onRowClick: ((v: VertragWithKunde) => void) | undefined = undefined;
+	export let onDelete: ((v: VertragWithKunde) => void) | undefined = undefined;
 
 	function formatDate(iso: string | null): string {
 		if (!iso) return '–';
@@ -46,6 +48,11 @@
 				<th scope="col" class="px-2.5 py-2">
 					{i18n.t('Ende')}
 				</th>
+				{#if onDelete}
+					<th scope="col" class="px-2.5 py-2">
+						{i18n.t('Aktionen')}
+					</th>
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -81,6 +88,23 @@
 					<td class="px-3 py-1 text-gray-600 dark:text-gray-400">
 						{formatDate(v.enddatum)}
 					</td>
+					{#if onDelete}
+						<td class="px-3 py-1">
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							<!-- svelte-ignore a11y-no-static-element-interactions -->
+							<div
+								class="inline-flex cursor-pointer hover:opacity-70 transition"
+								on:click={(e) => {
+									e.stopPropagation();
+									onDelete(v);
+								}}
+								role="button"
+								tabindex="0"
+							>
+								<GarbageBin className="size-3.5 text-red-500" />
+							</div>
+						</td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>

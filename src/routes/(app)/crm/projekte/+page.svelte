@@ -10,7 +10,9 @@
 	import ProjektFormModal from '$lib/components/crm/ProjektFormModal.svelte';
 	import ViewSwitcher from '$lib/components/crm/ViewSwitcher.svelte';
 	import CrmSearchFilter from '$lib/components/crm/CrmSearchFilter.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
 	import { crmViewMode } from '$lib/stores';
 	import { supabase } from '$lib/supabaseClient';
 	import { fetchCrmList } from '$lib/utils/crmSearch';
@@ -19,6 +21,9 @@
 
 	let showProjektModal = false;
 	let selectedItem: ProjektWithBausteineCount | null = null;
+	let showDeleteConfirm = false;
+	let projektToDelete: ProjektWithBausteineCount | null = null;
+	let deleteLoading = false;
 
 	let searchValue = '';
 	let filterValues: Record<string, string> = {};
@@ -85,6 +90,34 @@
 		showProjektModal = true;
 	}
 
+	function openDelete(p: ProjektWithBausteineCount) {
+		projektToDelete = p;
+		showDeleteConfirm = true;
+	}
+
+	async function handleDelete() {
+		if (!projektToDelete) return;
+
+		deleteLoading = true;
+		try {
+			const { error } = await supabase.from('projekte').delete().eq('id', projektToDelete.id);
+			if (error) {
+				console.error('Delete error:', error);
+				toast.error(i18n.t('Projekt konnte nicht gelöscht werden.'));
+			} else {
+				toast.success(i18n.t('Projekt gelöscht.'));
+				showDeleteConfirm = false;
+				projektToDelete = null;
+				await invalidateAll();
+			}
+		} catch (e) {
+			console.error('Delete error:', e);
+			toast.error(i18n.t('Projekt konnte nicht gelöscht werden.'));
+		} finally {
+			deleteLoading = false;
+		}
+	}
+
 	async function handleSave() {
 		await invalidateAll();
 	}
@@ -105,6 +138,17 @@
 		</button>
 	</div>
 </div>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Projekt löschen?')}
+	message={i18n.t('Möchten Sie das Projekt „' + (projektToDelete?.name || '') + '" wirklich löschen?')}
+	confirmText={i18n.t('Löschen')}
+	cancelText={i18n.t('Abbrechen')}
+	isDangerous={true}
+	loading={deleteLoading}
+	on:confirm={handleDelete}
+/>
 
 <ProjektFormModal
 	bind:show={showProjektModal}
@@ -153,7 +197,7 @@
 				<div
 					class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3"
 				>
-					<ProjekteTable projekte={displayItems} kunden={data.kunden ?? []} onRowClick={openEdit} />
+					<ProjekteTable projekte={displayItems} kunden={data.kunden ?? []} onRowClick={openEdit} onDelete={openDelete} />
 					{#if hasSearchOrFilter && displayItems.length === 0}
 						<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
 							{i18n.t('Keine Ergebnisse gefunden.')}

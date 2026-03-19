@@ -68,6 +68,8 @@
 	import Sparkles from '../icons/Sparkles.svelte';
 	import UsersSolid from '../icons/UsersSolid.svelte';
 	import Database from '../icons/Database.svelte';
+	import FolderIcon from '../icons/Folder.svelte';
+	import Banknotes from '../icons/Banknotes.svelte';
 	import { slide } from 'svelte/transition';
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 
@@ -781,6 +783,46 @@
 						</a>
 					</Tooltip>
 				</div>
+				<div class="">
+					<Tooltip content={$i18n.t('Projekte')} placement="right">
+						<a
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+							href="/projekte"
+							draggable="false"
+							on:click={async (e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+								goto('/projekte');
+								itemClickHandler();
+							}}
+							aria-label={$i18n.t('Projekte')}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<FolderIcon className="size-4.5" />
+							</div>
+						</a>
+					</Tooltip>
+				</div>
+				<div class="">
+					<Tooltip content={$i18n.t('Finanzen')} placement="right">
+						<a
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group"
+							href="/finanzen"
+							draggable="false"
+							on:click={async (e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+								goto('/finanzen');
+								itemClickHandler();
+							}}
+							aria-label={$i18n.t('Finanzen')}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<Banknotes className="size-4.5" />
+							</div>
+						</a>
+					</Tooltip>
+				</div>
 				{#if $user?.role === 'admin' || $user?.permissions?.workspace?.knowledge}
 					<div class="">
 						<Tooltip content={$i18n.t('Knowledge')} placement="right">
@@ -1087,6 +1129,40 @@
 							</div>
 							<div class="flex flex-1 self-center translate-y-[0.5px]">
 								<div class=" self-center text-sm font-primary">{$i18n.t('CRM')}</div>
+							</div>
+						</a>
+					</div>
+					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
+						<a
+							id="sidebar-projekte-button"
+							class="group grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+							href="/projekte"
+							on:click={itemClickHandler}
+							draggable="false"
+							aria-label={$i18n.t('Projekte')}
+						>
+							<div class="self-center">
+								<FolderIcon className=" size-4.5" />
+							</div>
+							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('Projekte')}</div>
+							</div>
+						</a>
+					</div>
+					<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
+						<a
+							id="sidebar-finanzen-button"
+							class="group grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
+							href="/finanzen"
+							on:click={itemClickHandler}
+							draggable="false"
+							aria-label={$i18n.t('Finanzen')}
+						>
+							<div class="self-center">
+								<Banknotes className=" size-4.5" />
+							</div>
+							<div class="flex flex-1 self-center translate-y-[0.5px]">
+								<div class=" self-center text-sm font-primary">{$i18n.t('Finanzen')}</div>
 							</div>
 						</a>
 					</div>

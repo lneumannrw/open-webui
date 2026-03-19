@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte';
 	import type { AnfrageWithKunde } from '$lib/types/anfragen';
 	import Badge from '$lib/components/common/Badge.svelte';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
 
 	const i18nRaw = getContext('i18n');
 	const i18n =
@@ -11,6 +12,7 @@
 
 	export let anfragen: AnfrageWithKunde[] = [];
 	export let onRowClick: ((a: AnfrageWithKunde) => void) | undefined = undefined;
+	export let onDelete: ((a: AnfrageWithKunde) => void) | undefined = undefined;
 
 	function statusBadgeType(status: AnfrageWithKunde['status']): string {
 		switch (status) {
@@ -58,6 +60,11 @@
 				<th scope="col" class="px-2.5 py-2">
 					{i18n.t('Beschreibung')}
 				</th>
+				{#if onDelete}
+					<th scope="col" class="px-2.5 py-2 w-10">
+						{i18n.t('Aktionen')}
+					</th>
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -94,6 +101,20 @@
 					<td class="px-3 py-1 max-w-64 truncate">
 						{a.beschreibung ?? '–'}
 					</td>
+					{#if onDelete}
+						<td class="px-3 py-1 w-10">
+							<button
+								class="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition text-red-600 dark:text-red-400"
+								on:click={(e) => {
+									e.stopPropagation();
+									onDelete(a);
+								}}
+								title={i18n.t('Löschen')}
+							>
+								<GarbageBin className="size-4" />
+							</button>
+						</td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>

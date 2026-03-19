@@ -5,12 +5,14 @@
 	import type { VertragWithKunde } from '$lib/types/vertraege';
 	import type { PageData } from './$types';
 	import Spinner from '$lib/components/common/Spinner.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import VertraegeTable from '$lib/components/crm/VertraegeTable.svelte';
 	import VertragCard from '$lib/components/crm/VertragCard.svelte';
 	import VertragFormModal from '$lib/components/crm/VertragFormModal.svelte';
 	import ViewSwitcher from '$lib/components/crm/ViewSwitcher.svelte';
 	import CrmSearchFilter from '$lib/components/crm/CrmSearchFilter.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
+	import GarbageBin from '$lib/components/icons/GarbageBin.svelte';
 	import { crmViewMode } from '$lib/stores';
 	import { supabase } from '$lib/supabaseClient';
 	import { fetchCrmList } from '$lib/utils/crmSearch';
@@ -25,6 +27,10 @@
 	let displayItems: VertragWithKunde[] = [];
 	let loading = false;
 	let searchDebounceTimer: ReturnType<typeof setTimeout>;
+
+	let showDeleteConfirm = false;
+	let vertragToDelete: VertragWithKunde | null = null;
+	let deleteLoading = false;
 
 	const i18nRaw = getContext('i18n');
 	const i18n =
@@ -76,6 +82,35 @@
 		showVertragModal = true;
 	}
 
+	function openDelete(v: VertragWithKunde) {
+		vertragToDelete = v;
+		showDeleteConfirm = true;
+	}
+
+	async function handleDelete() {
+		if (!vertragToDelete) return;
+
+		deleteLoading = true;
+		try {
+			const { error } = await supabase.from('vertraege').delete().eq('id', vertragToDelete.id);
+
+			if (error) {
+				console.error('Delete error:', error);
+				toast.error(i18n.t('Vertrag konnte nicht gelöscht werden.'));
+			} else {
+				toast.success(i18n.t('Vertrag erfolgreich gelöscht.'));
+				await invalidateAll();
+			}
+		} catch (e) {
+			console.error('Delete error:', e);
+			toast.error(i18n.t('Fehler beim Löschen des Vertrags.'));
+		} finally {
+			deleteLoading = false;
+			showDeleteConfirm = false;
+			vertragToDelete = null;
+		}
+	}
+
 	async function handleSave() {
 		await invalidateAll();
 	}
@@ -96,6 +131,15 @@
 		</button>
 	</div>
 </div>
+
+<ConfirmDialog
+	bind:show={showDeleteConfirm}
+	title={i18n.t('Vertrag löschen?')}
+	message={i18n.t('Der Vertrag wird unwiederbringlich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.')}
+	confirmLabel={i18n.t('Löschen')}
+	cancelLabel={i18n.t('Abbrechen')}
+	onConfirm={handleDelete}
+/>
 
 <VertragFormModal
 	bind:show={showVertragModal}
@@ -144,7 +188,7 @@
 				<div
 					class="py-2 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100/30 dark:border-gray-850/30 px-3"
 				>
-					<VertraegeTable vertraege={displayItems} onRowClick={openEdit} />
+					<VertraegeTable vertraege={displayItems} onRowClick={openEdit} onDelete={openDelete} />
 					{#if hasSearchOrFilter && displayItems.length === 0}
 						<p class="my-6 text-center text-sm text-gray-500 dark:text-gray-400">
 							{i18n.t('Keine Ergebnisse gefunden.')}
